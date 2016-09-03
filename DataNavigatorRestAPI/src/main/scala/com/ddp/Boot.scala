@@ -1,4 +1,4 @@
-package com.example
+package com.ddp
 
 import akka.actor.{ActorSystem, Props}
 import akka.io.IO
@@ -6,6 +6,7 @@ import spray.can.Http
 import akka.pattern.ask
 import akka.util.Timeout
 import scala.concurrent.duration._
+import com.ddp.rest._
 
 object Boot extends App {
 
