@@ -6,6 +6,7 @@ import MediaTypes._
 import akka.actor.{Actor, ActorLogging, ActorSystem, Props}
 import akka.pattern.ask
 import akka.util.Timeout
+import com.ddp.jarmanager.JarParamter
 import org.json4s.{DefaultFormats, Formats}
 import spray.can.Http
 import spray.can.server.Stats
@@ -52,20 +53,56 @@ trait MyService extends HttpService {
     path("entity") {
         post {
           respondWithStatus(Created) {
-            entity(as[IngestionParameter]) { someObject =>
+            entity(as[CopybookIngestionParameter]) { someObject =>
               doCreate(someObject)
+            }
+          }
+        } ~
+          post {
+            respondWithStatus(Created) {
+              entity(as[QueryParameter]) {
+                someObject => doQuery(someObject)
+              }
+            }
+          }
+    } ~
+    path("app") {
+        post {
+          respondWithStatus(OK) {
+            entity(as[JarParamter]) { someObject =>
+              doJarManager(someObject)
             }
           }
         } ~
         post {
           respondWithStatus(OK) {
-            entity(as[QueryParameter] ) {
-              someObject=>doQuery(someObject)
+            entity(as[UserClassParameter]) { someObject =>
+              doUserClass(someObject)
             }
           }
         }
     }
   }
+
+def doUserClass(param:UserClassParameter) = {
+    complete{
+      import WorkerActor._
+      (worker ? param)
+        .mapTo[Ok]
+        .map(result => s"I got a response: ${result}")
+        .recover { case _ => "error" }
+    }
+  }
+
+def doJarManager(param:JarParamter) = {
+  complete{
+    import WorkerActor._
+    (worker ? param)
+      .mapTo[Ok]
+      .map(result => s"I got a response: ${result}")
+      .recover { case _ => "error" }
+  }
+}
 
 def doQuery(param:QueryParameter) = {
   complete{
@@ -77,7 +114,7 @@ def doQuery(param:QueryParameter) = {
   }
 }
 
-def doCreate(param: IngestionParameter) = {
+def doCreate(param: CopybookIngestionParameter) = {
   complete {
   //We use the Ask pattern to return
   //a future from our worker Actor,
