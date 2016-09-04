@@ -56,11 +56,26 @@ trait MyService extends HttpService {
               doCreate(someObject)
             }
           }
+        } ~
+        post {
+          respondWithStatus(OK) {
+            entity(as[QueryParameter] ) {
+              someObject=>doQuery(someObject)
+            }
+          }
         }
     }
   }
 
-
+def doQuery(param:QueryParameter) = {
+  complete{
+    import WorkerActor._
+    (worker ? param)
+      .mapTo[Ok]
+      .map(result => s"I got a response: ${result}")
+      .recover { case _ => "error" }
+  }
+}
 
 def doCreate(param: IngestionParameter) = {
   complete {
