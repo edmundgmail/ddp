@@ -208,7 +208,7 @@
         <configuration>
           <archive>
             <manifest>
-              <mainClass>com.esri.DBFApp</mainClass>
+              <mainClass>com.ddp.Boot</mainClass>
               <addClasspath>true</addClasspath>
               <classpathPrefix>libs/</classpathPrefix>
             </manifest>
