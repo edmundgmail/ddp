@@ -7,6 +7,7 @@ import org.apache.spark.sql.SQLContext
 import org.apache.spark.{SparkConf, SparkContext}
 import com.ddp.jarmanager.{JarLoader, JarParamter}
 import com.ddp.userclass.UserClassRunner
+import org.apache.spark.sql.hive.HiveContext
 import org.xeustechnologies.jcl.{JarClassLoader, JclObjectFactory}
 
 case class CopybookIngestionParameter(
@@ -27,10 +28,11 @@ object WorkerActor {
   case class Ok(msg: String)
   case class Error(msg: String)
 
-  val sparkConf = new SparkConf().setAppName("ActorWordCount").setMaster("spark://quickstart.cloudera:7077")
+  val sparkConf = new SparkConf().setAppName("ActorWordCount").setMaster("local[2]")//.setMaster("spark://quickstart.cloudera:7077")
   // Create the context and set the batch size
   val sc = new SparkContext(sparkConf)
   val sqlContext = new SQLContext(sc)
+  val hc = new HiveContext(sc)
   //import sqlContext._
   //import com.ddp.cpybook._
   val jclFactory : JclObjectFactory = JclObjectFactory.getInstance()
@@ -47,7 +49,7 @@ class WorkerActor extends Actor with ActorLogging {
   def receive = {
     {
       case message : CopybookIngestionParameter => {
-          sender ! CopybookIngestion(sqlContext, message).generate()
+          sender ! CopybookIngestion(hc, sqlContext, message).generate()
       }
 
       case loadjars : JarParamter => {

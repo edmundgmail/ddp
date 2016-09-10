@@ -5,11 +5,12 @@ import org.apache.hadoop
 import org.apache.spark.sql.SQLContext
 import com.ddp.cpybook._
 import com.ddp.rest.CopybookIngestionParameter
+import org.apache.spark.sql.hive.HiveContext
 
 /**
   * Created by cloudera on 9/3/16.
   */
-  case class CopybookIngestion (sqlContext : SQLContext, param: CopybookIngestionParameter) extends TableGenerator{
+  case class CopybookIngestion (hc: HiveContext, sqlContext : SQLContext, param: CopybookIngestionParameter) extends TableGenerator{
     override def generate() : Unit = {
       val conf = new hadoop.conf.Configuration
 
@@ -27,8 +28,14 @@ import com.ddp.rest.CopybookIngestionParameter
       val trips = sqlContext.cbFile(conf)
 
       trips.schema.fields.foreach(println)
-      trips.show(1)
-      trips.registerTempTable(param.cpyBookName)
+      trips.show(10)
+      val tempTable = param.cpyBookName + "_temp"
+      trips.createOrReplaceTempView(tempTable)
+      hc.sql("select * from " + tempTable)
+      //hc.sql("create table " + param.cpyBookName + " as select * from " + tempTable )
+      //sqlContext.sql("select * from " + tempTable)
+      //sqlContext.sql("create table " + param.cpyBookName + " as select * from " + tempTable )
+      //System.out.println("done create table")
 
     }
 }
