@@ -1,7 +1,7 @@
 package com.ddp.cpybook
 
 import org.apache.hadoop.conf.Configuration
-import org.apache.spark.sql.SQLContext
+import org.apache.spark.sql.{SQLContext, SparkSession}
 import org.apache.spark.sql.sources.{BaseRelation, RelationProvider}
 
 /**

@@ -20,7 +20,7 @@ case class CopybookIngestionParameter(
                                splitOptoin: String = "SplitNone"
                              )
 
-case class QueryParameter(tableName:String)
+case class QueryParameter(sql:String)
 
 case class UserClassParameter (userClassName: String)
 
@@ -28,11 +28,14 @@ object WorkerActor {
   case class Ok(msg: String)
   case class Error(msg: String)
 
-  val sparkConf = new SparkConf().setAppName("ActorWordCount").setMaster("local[2]")//.setMaster("spark://quickstart.cloudera:7077")
+  val sparkSession = org.apache.spark.sql.SparkSession.builder
+    .master("spark://quickstart.cloudera:7077")
+    .appName("my-spark-app")
+    .config("spark.some.config.option", "config-value")
+    .getOrCreate()
+
+  //setMaster("spark://quickstart.cloudera:7077")
   // Create the context and set the batch size
-  val sc = new SparkContext(sparkConf)
-  val sqlContext = new SQLContext(sc)
-  val hc = new HiveContext(sc)
   //import sqlContext._
   //import com.ddp.cpybook._
   val jclFactory : JclObjectFactory = JclObjectFactory.getInstance()
@@ -49,7 +52,7 @@ class WorkerActor extends Actor with ActorLogging {
   def receive = {
     {
       case message : CopybookIngestionParameter => {
-          sender ! CopybookIngestion(hc, sqlContext, message).generate()
+          sender ! CopybookIngestion(sparkSession, message).generate()
       }
 
       case loadjars : JarParamter => {
@@ -57,11 +60,11 @@ class WorkerActor extends Actor with ActorLogging {
       }
 
       case message : QueryParameter => {
-          sender ! Query(sqlContext, message).query
+          sender ! Query(sparkSession.sqlContext, message).query
       }
 
       case message: UserClassParameter => {
-        sender ! UserClassRunner(jclFactory , jcl, sqlContext, message).run
+        sender ! UserClassRunner(jclFactory , jcl, sparkSession.sqlContext, message).run
       }
       case _ => sender ! Error("Wrong param type")
     }
@@ -72,7 +75,7 @@ case class Query(sqlContext:SQLContext, param : QueryParameter){
   def query : Unit = {
 
 
-    sqlContext.sql("select * from " + param.tableName).show(10)
+    sqlContext.sql(param.sql).show(10)
   }
 
 }
