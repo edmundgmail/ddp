@@ -34,6 +34,10 @@ class MyServiceActor extends Actor with MyService {
   // other things here, like request stream processing
   // or timeout handling
   def receive = runRoute(myRoute)
+
+  def staticRoute: Route =
+    path("")(getFromResource("webapp/index.html")) ~ getFromResourceDirectory("webapp")
+
 }
 
 
@@ -81,7 +85,28 @@ trait MyService extends HttpService {
             }
           }
         }
-    }
+    } ~
+      path( "spray-json-message" ) {
+        get {
+          complete {
+            complete("Hello mama!")
+          }
+        }
+      } ~
+      path("spray-html") {
+        get {
+          respondWithMediaType(`text/html`) {
+            complete {
+              <html>
+                <body>
+                  <h1>Hello papa!</h1>
+                </body>
+              </html>
+            }
+          }
+        }
+      }
+
   }
 
 def doUserClass(param:UserClassParameter) = {

@@ -29,11 +29,12 @@ import org.apache.spark.sql.hive.HiveContext
 
       trips.schema.fields.foreach(println)
       trips.show(10)
-      val tempTable = param.cpyBookName + "_temp"
-      trips.registerTempTable(tempTable)
+      val tempTable = param.cpyBookName + "_temp_1"
+      trips.createOrReplaceTempView(tempTable)
 
-      sqlContext.sql("select * from " + tempTable)
-      //sqlContext.sql("create table testdb.b(b int)")
+      //sqlContext.sql("select * from " + tempTable)
+      sqlContext.sql("create table testdb.b(b int, c string) partition by b,c")
+
        //trips.createOrReplaceTempView(tempTable)
       //hc.sql("select * from " + tempTable)
       //hc.sql("create table " + param.cpyBookName + " as select * from " + tempTable )
