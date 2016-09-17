@@ -35,8 +35,6 @@ class MyServiceActor extends Actor with MyService {
   // or timeout handling
   def receive = runRoute(myRoute)
 
-  def staticRoute: Route =
-    path("")(getFromResource("webapp/index.html")) ~ getFromResourceDirectory("webapp")
 
 }
 
@@ -49,7 +47,7 @@ trait MyService extends HttpService {
   import WorkerActor._
 
   implicit def executionContext = actorRefFactory.dispatcher
-  implicit val timeout = Timeout(5 seconds)
+  implicit val timeout = Timeout(50 seconds)
 
   val worker = actorRefFactory.actorOf(Props[WorkerActor], "worker")
 
@@ -66,10 +64,9 @@ trait MyService extends HttpService {
           }
         } ~
           post {
-            respondWithStatus(Created) {
               entity(as[QueryParameter]) {
                 someObject => doQuery(someObject)
-              }
+
             }
           }
     } ~
@@ -91,7 +88,9 @@ trait MyService extends HttpService {
     } ~
       path( "spray-json-message" ) {
         get {
-            complete("Hello mama!")
+          complete {
+            "Hello mama!"
+          }
         }
       } ~
       path("spray-html") {

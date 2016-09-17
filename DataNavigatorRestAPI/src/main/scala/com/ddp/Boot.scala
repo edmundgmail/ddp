@@ -16,7 +16,7 @@ object Boot extends App {
   // create and start our service actor
   val service = system.actorOf(Props[MyServiceActor], "demo-service")
 
-  implicit val timeout = Timeout(5.seconds)
+  implicit val timeout = Timeout(50.seconds)
   // start a new HTTP server on port 8080 with our service actor as the handler
   IO(Http) ? Http.Bind(service, interface = "0.0.0.0", port = 8881)
 }

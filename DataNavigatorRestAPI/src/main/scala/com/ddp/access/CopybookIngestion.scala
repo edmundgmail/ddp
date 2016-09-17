@@ -15,7 +15,7 @@ import org.apache.spark.sql.hive.HiveContext
       val conf = new hadoop.conf.Configuration
 
 
-      conf.set("fs.defaultFS", "hdfs://localhost:8020/")
+      conf.set("fs.defaultFS", "hdfs://eguo-linux:8020/")
 
       conf.set(Constants.CopybookName, param.cpyBookName)
       conf.set(Constants.CopybookHdfsPath, param.cpyBookHdfsPath  )

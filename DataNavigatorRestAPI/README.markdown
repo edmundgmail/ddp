@@ -52,7 +52,7 @@ Follow these steps to get started:
 
 10 . to test this, use 
 
-curl -v -X POST http://localhost:8081/entity -H "Content-Type: application/json" -d "{ \"cpyBookName\": \"RPWACT\", \"cpyBookHdfsPath\": \"/user/root/LRPWSACT.cpy\", \"fileStructure\":\"FixedLength\", \"binaryFormat\": \"FMT_MAINFRAME\", \"splitOptoin\": \"SplitNone\", \"dataFileHdfsPath\":\"/user/root/RPWACT.FIXED.END\", \"cpybookFont\":\"cp037\" }"
+curl -v -X POST http://localhost:8881/entity -H "Content-Type: application/json" -d "{ \"cpyBookName\": \"RPWACT\", \"cpyBookHdfsPath\": \"/user/root/LRPWSACT.cpy\", \"fileStructure\":\"FixedLength\", \"binaryFormat\": \"FMT_MAINFRAME\", \"splitOptoin\": \"SplitNone\", \"dataFileHdfsPath\":\"/user/root/RPWACT.FIXED.END\", \"cpybookFont\":\"cp037\" }"
 
 {"format":"cpybook",
 "cpyBookName": "RPWACT",
