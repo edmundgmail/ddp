@@ -29,8 +29,8 @@ object WorkerActor {
   case class Error(msg: String)
 
   val sparkSession = org.apache.spark.sql.SparkSession.builder
-    //.master("spark://quickstart.cloudera:7077")
-      .master("local[2]")
+    .master("spark://eguo-linux:7077")
+      //.master("local[2]")
     .appName("my-spark-app")
     .config("spark.some.config.option", "config-value")
       .enableHiveSupport()

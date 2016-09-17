@@ -54,6 +54,9 @@ trait MyService extends HttpService {
   val worker = actorRefFactory.actorOf(Props[WorkerActor], "worker")
 
   val myRoute = {
+    path("") {
+      getFromResource("webapp/index.html")
+    } ~
     path("entity") {
         post {
           respondWithStatus(Created) {
@@ -88,9 +91,7 @@ trait MyService extends HttpService {
     } ~
       path( "spray-json-message" ) {
         get {
-          complete {
             complete("Hello mama!")
-          }
         }
       } ~
       path("spray-html") {
