@@ -35,8 +35,6 @@ class MyServiceActor extends Actor with MyService {
   // or timeout handling
   def receive = runRoute(myRoute)
 
-  def staticRoute: Route =
-    path("")(getFromResource("webapp/index.html")) ~ getFromResourceDirectory("webapp")
 
 }
 
@@ -63,10 +61,9 @@ trait MyService extends HttpService {
           }
         } ~
           post {
-            respondWithStatus(Created) {
               entity(as[QueryParameter]) {
                 someObject => doQuery(someObject)
-              }
+
             }
           }
     } ~
@@ -89,7 +86,7 @@ trait MyService extends HttpService {
       path( "spray-json-message" ) {
         get {
           complete {
-            complete("Hello mama!")
+            "Hello mama!"
           }
         }
       } ~

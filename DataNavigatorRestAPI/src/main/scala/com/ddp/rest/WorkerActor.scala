@@ -1,14 +1,25 @@
 package com.ddp.rest
 
+import java.io.File
+import java.nio.file.{Files, Paths}
+
 import akka.actor.{Actor, ActorLogging}
 import com.ddp.access.CopybookIngestion
 import org.apache.hadoop
-import org.apache.spark.sql.SQLContext
+import org.apache.spark.sql.{DataFrame, SQLContext}
 import org.apache.spark.{SparkConf, SparkContext}
 import com.ddp.jarmanager.{JarLoader, JarParamter}
+import com.ddp.rest.WorkerActor.{Error, Ok}
 import com.ddp.userclass.UserClassRunner
+import org.apache.commons.io.FileUtils
 import org.apache.spark.sql.hive.HiveContext
 import org.xeustechnologies.jcl.{JarClassLoader, JclObjectFactory}
+
+import scala.io.Source
+
+
+
+
 
 case class CopybookIngestionParameter(
                                cpyBookName : String,
@@ -74,10 +85,25 @@ class WorkerActor extends Actor with ActorLogging {
 }
 
 case class Query(sqlContext:SQLContext, param : QueryParameter){
-  def query : Unit = {
+  def query : Any = {
+    val path = "/tmp/" + System.currentTimeMillis + "_" + util.Random.nextInt(10000) + ".tmp"
 
+    try {
 
-    sqlContext.sql(param.sql).show(10)
+      sqlContext.sql(param.sql).write.json(path)
+    }
+
+    if (Files.exists(Paths.get(path)) && Files.exists(Paths.get(path + "/_SUCCESS"))) {
+      val f = new File(path)
+      val x = f.listFiles().filter(_.getName.endsWith(".json")).flatMap(Source fromFile _ getLines() mkString)
+
+      FileUtils.deleteQuietly(new java.io.File(path))
+
+      System.out.println("Query x = " + x)
+      Ok(x.toString)
+    }
+    else {
+      Error("error")
+    }
   }
-
 }
