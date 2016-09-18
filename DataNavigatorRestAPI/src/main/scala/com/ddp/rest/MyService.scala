@@ -1,5 +1,7 @@
 package com.ddp.rest
 
+import java.util.concurrent.Executors
+
 import akka.actor.{Actor, Props}
 import spray.http._
 import MediaTypes._
@@ -14,6 +16,7 @@ import spray.http.StatusCodes._
 import spray.httpx.Json4sSupport
 import spray.routing._
 
+import scala.concurrent.ExecutionContext
 import scala.concurrent.duration._
 
 /* Used to mix in Spray's Marshalling Support with json4s */
@@ -45,7 +48,6 @@ class MyServiceActor extends Actor with MyService {
 trait MyService extends HttpService {
   import Json4sProtocol._
   import WorkerActor._
-
   implicit def executionContext = actorRefFactory.dispatcher
   implicit val timeout = Timeout(5 seconds)
 

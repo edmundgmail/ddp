@@ -12,9 +12,9 @@ import com.ddp.jarmanager.{JarLoader, JarParamter}
 import com.ddp.rest.WorkerActor.{Error, Ok}
 import com.ddp.userclass.UserClassRunner
 import org.apache.commons.io.FileUtils
-import org.apache.spark.sql.hive.HiveContext
 import org.xeustechnologies.jcl.{JarClassLoader, JclObjectFactory}
 
+import scala.concurrent.{ExecutionContext, Future}
 import scala.io.Source
 
 
@@ -40,10 +40,10 @@ object WorkerActor {
   case class Error(msg: String)
 
   val sparkSession = org.apache.spark.sql.SparkSession.builder
-    //.master("spark://quickstart.cloudera:7077")
+    //.master("spark://eguo-linux:7077")
       .master("local[2]")
     .appName("my-spark-app")
-    .config("spark.some.config.option", "config-value")
+    .config("spark.ui.port", "44040")
       .enableHiveSupport()
     .getOrCreate()
 
@@ -55,8 +55,6 @@ object WorkerActor {
   val jcl: JarClassLoader = new JarClassLoader()
 
 }
-
-
 
 
 class WorkerActor extends Actor with ActorLogging {
@@ -84,26 +82,24 @@ class WorkerActor extends Actor with ActorLogging {
   }
 }
 
+import ExecutionContext.Implicits.global
+
 case class Query(sqlContext:SQLContext, param : QueryParameter){
   def query : Any = {
     val path = "/tmp/" + System.currentTimeMillis + "_" + util.Random.nextInt(10000) + ".tmp"
 
-    try {
 
-      sqlContext.sql(param.sql).write.json(path)
+    Future{
+        try {
+          sqlContext.sql(param.sql).write.json(path)
+
+        }
+        catch
+          {
+            case _ :Throwable =>
+          }
     }
+    Ok(path + ",appid=" +  sqlContext.sparkSession.sparkContext.applicationId)
 
-    if (Files.exists(Paths.get(path)) && Files.exists(Paths.get(path + "/_SUCCESS"))) {
-      val f = new File(path)
-      val x = f.listFiles().filter(_.getName.endsWith(".json")).flatMap(Source fromFile _ getLines() mkString)
-
-      FileUtils.deleteQuietly(new java.io.File(path))
-
-      System.out.println("Query x = " + x)
-      Ok(x.toString)
-    }
-    else {
-      Error("error")
-    }
   }
 }

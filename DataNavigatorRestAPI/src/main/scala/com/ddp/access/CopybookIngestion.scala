@@ -5,17 +5,19 @@ import org.apache.hadoop
 import org.apache.spark.sql.{SQLContext, SparkSession}
 import com.ddp.cpybook._
 import com.ddp.rest.CopybookIngestionParameter
-import org.apache.spark.sql.hive.HiveContext
+import com.ddp.rest.WorkerActor.Ok
+import scala.concurrent.ExecutionContext.Implicits.global
+import scala.concurrent.Future
 
 /**
   * Created by cloudera on 9/3/16.
   */
   case class CopybookIngestion (sqlContext : SparkSession, param: CopybookIngestionParameter) extends TableGenerator{
-    override def generate() : Unit = {
+    override def generate() : Any = {
       val conf = new hadoop.conf.Configuration
 
 
-      conf.set("fs.defaultFS", "hdfs://localhost:8020/")
+      conf.set("fs.defaultFS", "hdfs://localhost:9000/")
 
       conf.set(Constants.CopybookName, param.cpyBookName)
       conf.set(Constants.CopybookHdfsPath, param.cpyBookHdfsPath  )
@@ -24,16 +26,18 @@ import org.apache.spark.sql.hive.HiveContext
       conf.set(Constants.CopybookSplitOpiton, param.splitOptoin)
       conf.set(Constants.DataFileHdfsPath, param.dataFileHdfsPath)
       conf.set(Constants.CopybookFont, param.cpybookFont)
-
-      val trips = sqlContext.cbFile(conf)
-
-      trips.schema.fields.foreach(println)
-      trips.show(10)
       val tempTable = param.cpyBookName + "_temp_1"
-      trips.createOrReplaceTempView(tempTable)
+
+      Future{
+        val trips = sqlContext.cbFile(conf)
+        trips.createOrReplaceTempView(tempTable)
+        trips.cache()
+      }
+
+      Ok("Table name = " + tempTable + ", appid =" + sqlContext.sparkContext.applicationId)
+
 
       //sqlContext.sql("select * from " + tempTable)
-      sqlContext.sql("create table testdb.b(b int, c string) partition by b,c")
 
        //trips.createOrReplaceTempView(tempTable)
       //hc.sql("select * from " + tempTable)

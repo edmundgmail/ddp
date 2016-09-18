@@ -5,3 +5,5 @@ src_managed/
 test-output/
 *.iml
 .classpath_nb
+derby.log
+metastore_db

@@ -5,6 +5,7 @@ package com.ddp.cpybook
   */
 import java.io.{BufferedInputStream, IOException}
 
+import net.sf.JRecord.Common.{BasicFileSchema, IBasicFileSchema}
 import net.sf.JRecord.Details.AbstractLine
 import net.sf.JRecord.External.ExternalRecord
 import net.sf.JRecord.IO.{AbstractLineReader, LineIOProvider}
@@ -39,7 +40,7 @@ class CopybookRecordReader extends RecordReader[LongWritable, Map[String, String
     externalRecord = CopybookHelper.getExternalRecord(context.getConfiguration)
     lr = LineIOProvider.getInstance().getLineReader(
       fileStructure,
-      LineIOProvider.getInstance().getLineProvider(fileStructure))
+      LineIOProvider.getInstance().getLineProvider(BasicFileSchema.newFixedSchema(fileStructure)))
 
     // jump to the point in the split that the first whole record of split
     // starts at

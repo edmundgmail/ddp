@@ -6,6 +6,7 @@ import net.sf.JRecord.External.{CobolCopybookLoader, ExternalRecord}
 import org.apache.hadoop.conf.Configuration
 import org.apache.hadoop.fs.{FileSystem, Path}
 
+import scala.concurrent.ExecutionContext
 import scala.util.Try
 
 /**
