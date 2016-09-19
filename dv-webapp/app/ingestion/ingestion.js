@@ -36,11 +36,13 @@ return $resource('http://localhost:8881/entity',{},
            console.log('User clicked register', $scope.copybook_fileStructure);
            var ing = {
               'cpyBookName': $scope.copybook_cpyBookName,
-              'cpyBookHdfsPath': $scope.cpyBookHdfsPath
-              // \"/user/root/LRPWSACT.cpy\", \"fileStructure\":\"FixedLength\", \"binaryFormat\": \"FMT_MAINFRAME\", \"splitOptoin\": \"SplitNone\", \"dataFileHdfsPath\":\"/user/root/RPWACT.FIXED.END\", \"cpybookFont\":\"cp037\" }"
-
+              'cpyBookHdfsPath': $scope.copybook_cpyBookHdfsPath,
+              'fileStructure': $scope.copybook_dataFileHdfsPath,
+              'binaryFormat' : $scope.copybook_binaryFormat,
+              'splitOptoin':$scope.copybook_splitOption,
+              'cpybookFont':$scope.copybook_fontValue
            }
-           var res = copybookIngestion.get({}, function(){
+           var res = copybookIngestion.update(ing, function(){
             console.log(res);
            });
         };
