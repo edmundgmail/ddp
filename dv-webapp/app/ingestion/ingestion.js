@@ -5,7 +5,8 @@ angular.module('myApp.ingestion', ['ngRoute','ngResource'])
 .factory('copybookIngestion', ['$resource', function($resource) {
 return $resource('http://localhost:8881/entity',{},
     {
-        'update': { method:'POST' ,headers: [{'Content-Type': 'application/json'}] }
+        'update': { method:'POST' ,headers: [{'Content-Type': 'application/json'}] },
+        'get' : {method: 'GET' }
     });
 }])
 
@@ -39,6 +40,8 @@ return $resource('http://localhost:8881/entity',{},
               // \"/user/root/LRPWSACT.cpy\", \"fileStructure\":\"FixedLength\", \"binaryFormat\": \"FMT_MAINFRAME\", \"splitOptoin\": \"SplitNone\", \"dataFileHdfsPath\":\"/user/root/RPWACT.FIXED.END\", \"cpybookFont\":\"cp037\" }"
 
            }
-           copybookIngestion.update(null, ing)
+           var res = copybookIngestion.get({}, function(){
+            console.log(res);
+           });
         };
   });

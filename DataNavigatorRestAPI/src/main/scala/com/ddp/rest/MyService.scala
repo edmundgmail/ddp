@@ -8,14 +8,13 @@ import MediaTypes._
 import akka.actor.{Actor, ActorLogging, ActorSystem, Props}
 import akka.pattern.ask
 import akka.util.Timeout
-import com.ddp.jarmanager.JarParamter
 import org.json4s.{DefaultFormats, Formats}
 import spray.can.Http
 import spray.can.server.Stats
 import spray.http.StatusCodes._
 import spray.httpx.Json4sSupport
 import spray.routing._
-
+import com.ddp.jarmanager.JarParamter
 import scala.concurrent.ExecutionContext
 import scala.concurrent.duration._
 
@@ -54,7 +53,7 @@ trait MyService extends HttpService {
   val worker = actorRefFactory.actorOf(Props[WorkerActor], "worker")
 
   val myRoute = {
-    path("entity") {
+      path("entity") {
         post {
           respondWithStatus(Created) {
             entity(as[CopybookIngestionParameter]) { someObject =>
@@ -63,49 +62,52 @@ trait MyService extends HttpService {
           }
         } ~
           post {
-              entity(as[QueryParameter]) {
-                someObject => doQuery(someObject)
+            entity(as[QueryParameter]) {
+              someObject => doQuery(someObject)
 
             }
+          } ~
+          get {
+            complete("this is test")
           }
-    } ~
-    path("app") {
-        post {
-          respondWithStatus(OK) {
-            entity(as[JarParamter]) { someObject =>
-              doJarManager(someObject)
+
+      } ~
+        path("app") {
+          post {
+            respondWithStatus(OK) {
+              entity(as[JarParamter]) { someObject =>
+                doJarManager(someObject)
+              }
+            }
+          } ~
+            post {
+              respondWithStatus(OK) {
+                entity(as[UserClassParameter]) { someObject =>
+                  doUserClass(someObject)
+                }
+              }
+            }
+        } ~
+        path("spray-json-message") {
+          get {
+            complete {
+              "Hello mama!"
             }
           }
         } ~
-        post {
-          respondWithStatus(OK) {
-            entity(as[UserClassParameter]) { someObject =>
-              doUserClass(someObject)
+        path("spray-html") {
+          get {
+            respondWithMediaType(`text/html`) {
+              complete {
+                <html>
+                  <body>
+                    <h1>Hello papa!</h1>
+                  </body>
+                </html>
+              }
             }
           }
         }
-    } ~
-      path( "spray-json-message" ) {
-        get {
-          complete {
-            "Hello mama!"
-          }
-        }
-      } ~
-      path("spray-html") {
-        get {
-          respondWithMediaType(`text/html`) {
-            complete {
-              <html>
-                <body>
-                  <h1>Hello papa!</h1>
-                </body>
-              </html>
-            }
-          }
-        }
-      }
-
   }
 
 def doUserClass(param:UserClassParameter) = {
