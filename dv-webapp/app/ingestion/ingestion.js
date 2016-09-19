@@ -17,7 +17,7 @@ return $resource('http://localhost:8881/entity',{},
   });
 }])
 
-.controller('ingestionCtrl', function($scope, copybookIngestion) {
+.controller('ingestionCtrl', function($scope, $http) {
     $scope.items = ['copybook', 'csv', 'json', 'jdbc'];
     $scope.selection = $scope.items[0];
     $scope.copybook_fileStructures = ['FixedLength','VariableLength'];
@@ -31,19 +31,31 @@ return $resource('http://localhost:8881/entity',{},
 
     $scope.copybook_splitOptions = ['SplitNone','SplitRedefine','Split01Level','SplitHighestRepeating'];
     $scope.copybook_splitOption = $scope.copybook_splitOptions[0];
-
+    $scope.copybook_cpyBookName="";
+    
         $scope.RegisterCopybook = function() {
-           console.log('User clicked register', $scope.copybook_fileStructure);
            var ing = {
               'cpyBookName': $scope.copybook_cpyBookName,
               'cpyBookHdfsPath': $scope.copybook_cpyBookHdfsPath,
-              'fileStructure': $scope.copybook_dataFileHdfsPath,
+              'fileStructure':$scope.copybook_fileStructure, 
+              'dataFileHdfsPath': $scope.copybook_dataFileHdfsPath,
               'binaryFormat' : $scope.copybook_binaryFormat,
               'splitOptoin':$scope.copybook_splitOption,
               'cpybookFont':$scope.copybook_fontValue
            }
-           var res = copybookIngestion.update(ing, function(){
-            console.log(res);
-           });
+           //var res = copybookIngestion.update(ing, function(){
+           // console.log(res);
+           //});
+
+           console.log(ing);
+  $http.defaults.headers.common['Accept']= "application/json";
+  $http.defaults.headers.common['Content-Type']= "application/json";
+  var res = $http.post('http://localhost:8881/entity',ing);
+
+  res.success(function(status, data) {
+      console.log(data);
+  }).error(function(data) {
+      console.log(data);
+  });           
         };
   });

@@ -9,9 +9,9 @@
     ng-switch on="selection">
       <div class="animate-switch" ng-switch-when="copybook">
       	<form name="copybook" ng-submit="RegisterCopybook()" >
-             Copybook Name: <input type="text" ng-model="copybook_cpyBookName" required> <br/>
-             Copybook HDFS Path: <input type="text" ng-model="copybook_cpyBookHdfsPath" required><br/>
-             Data file HDFS Path: <input type="text" ng-model="copybook_dataFileHdfsPath" required><br/>
+             Copybook Name: {{copybook_cpyBookName}} <input type="text" ng-model="copybook_cpyBookName" required/> <br/>
+             Copybook HDFS Path: <input type="text" ng-model="copybook_cpyBookHdfsPath" required/><br/>
+             Data file HDFS Path: <input type="text" ng-model="copybook_dataFileHdfsPath" required/><br/>
              
              File Structure: <select ng-model="copybook_fileStructure">
              <option ng-repeat="copybook_fileStructure in copybook_fileStructures" value="{{copybook_fileStructure}}"> {{copybook_fileStructure}}</option> </select><br/>
