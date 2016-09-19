@@ -35,6 +35,8 @@ case class QueryParameter(sql:String)
 
 case class UserClassParameter (userClassName: String)
 
+
+
 object WorkerActor {
   case class Ok(msg: String)
   case class Error(msg: String)

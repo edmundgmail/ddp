@@ -88,21 +88,14 @@ trait MyService extends HttpService {
                   doUserClass(someObject)
                 }
               }
-            }
-        } ~
-        path("file") {
-              post {
-                entity(as[MultipartFormData]) {
-                  formData => {
-                    val ftmp = java.io.File.createTempFile("upload", ".tmp", new java.io.File("/tmp"))
-                    val output = new FileOutputStream(ftmp)
-                    formData.fields.foreach(f => output.write(f.entity.data.toByteArray ) )
-                    output.close()
-                    complete("done, file in: " + ftmp.getName())
-                  }
-                }
+            } ~
+          post {
+            respondWithStatus(OK) {
+              entity(as[ScalaSourceParameter]) { someObject =>
+                doScalaSource(someObject)
               }
-        } ~
+            }
+         } ~
         path("spray-json-message") {
           get {
             complete {
@@ -126,7 +119,15 @@ trait MyService extends HttpService {
   }
 
 
-
+  def doScalaSource(param:ScalaSourceParameter) = {
+      complete{
+        import WorkerActor._
+        (worker ? param)
+          .mapTo[Ok]
+          .map(result => s"I got a response: ${result}")
+          .recover { case _ => "error" }
+      }
+    }
 
   def doUserClass(param:UserClassParameter) = {
     complete{

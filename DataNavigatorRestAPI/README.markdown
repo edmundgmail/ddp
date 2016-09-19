@@ -55,6 +55,7 @@ Follow these steps to get started:
 curl -v -X POST http://localhost:8881/entity -H "Content-Type: application/json" -d "{ \"cpyBookName\": \"RPWACT\", \"cpyBookHdfsPath\": \"/user/root/LRPWSACT.cpy\", \"fileStructure\":\"FixedLength\", \"binaryFormat\": \"FMT_MAINFRAME\", \"splitOptoin\": \"SplitNone\", \"dataFileHdfsPath\":\"/user/root/RPWACT.FIXED.END\", \"cpybookFont\":\"cp037\" }"
 curl -v -X POST http://localhost:8881/entity -H "Content-Type: application/json" -d "{ \"sql\":\"select * from rpwact_temp_1\"}"
 
+curl -v -H "Content-Type: application/json" -X POS0558.log\"}" http://localhost:8881/file
 
 {"format":"cpybook",
 "cpyBookName": "RPWACT",
