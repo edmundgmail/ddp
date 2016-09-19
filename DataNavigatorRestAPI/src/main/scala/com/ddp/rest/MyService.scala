@@ -1,5 +1,6 @@
 package com.ddp.rest
 
+import java.io.{ByteArrayInputStream, FileOutputStream}
 import java.util.concurrent.Executors
 
 import akka.actor.{Actor, Props}
@@ -15,6 +16,7 @@ import spray.http.StatusCodes._
 import spray.httpx.Json4sSupport
 import spray.routing._
 import com.ddp.jarmanager.JarParamter
+
 import scala.concurrent.ExecutionContext
 import scala.concurrent.duration._
 
@@ -88,6 +90,19 @@ trait MyService extends HttpService {
               }
             }
         } ~
+        path("file") {
+              post {
+                entity(as[MultipartFormData]) {
+                  formData => {
+                    val ftmp = java.io.File.createTempFile("upload", ".tmp", new java.io.File("/tmp"))
+                    val output = new FileOutputStream(ftmp)
+                    formData.fields.foreach(f => output.write(f.entity.data.toByteArray ) )
+                    output.close()
+                    complete("done, file in: " + ftmp.getName())
+                  }
+                }
+              }
+        } ~
         path("spray-json-message") {
           get {
             complete {
@@ -110,7 +125,10 @@ trait MyService extends HttpService {
         }
   }
 
-def doUserClass(param:UserClassParameter) = {
+
+
+
+  def doUserClass(param:UserClassParameter) = {
     complete{
       import WorkerActor._
       (worker ? param)
