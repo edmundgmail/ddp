@@ -15,7 +15,7 @@ import spray.can.server.Stats
 import spray.http.StatusCodes._
 import spray.httpx.Json4sSupport
 import spray.routing._
-import com.ddp.jarmanager.JarParamter
+import com.ddp.jarmanager.{JarParamter, ScalaSourceParameter}
 
 import scala.concurrent.ExecutionContext
 import scala.concurrent.duration._
@@ -95,7 +95,8 @@ trait MyService extends HttpService {
                 doScalaSource(someObject)
               }
             }
-         } ~
+         }
+        } ~
         path("spray-json-message") {
           get {
             complete {

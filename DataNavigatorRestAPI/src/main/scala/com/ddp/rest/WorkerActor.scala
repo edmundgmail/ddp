@@ -8,7 +8,7 @@ import com.ddp.access.CopybookIngestion
 import org.apache.hadoop
 import org.apache.spark.sql.{DataFrame, SQLContext}
 import org.apache.spark.{SparkConf, SparkContext}
-import com.ddp.jarmanager.{JarLoader, JarParamter}
+import com.ddp.jarmanager.{JarLoader, JarParamter, ScalaSourceCompiiler, ScalaSourceParameter}
 import com.ddp.rest.WorkerActor.{Error, Ok}
 import com.ddp.userclass.UserClassRunner
 import org.apache.commons.io.FileUtils
@@ -79,6 +79,11 @@ class WorkerActor extends Actor with ActorLogging {
       case message: UserClassParameter => {
         sender ! UserClassRunner(jclFactory , jcl, sparkSession.sqlContext, message).run
       }
+
+      case message: ScalaSourceParameter => {
+        sender ! ScalaSourceCompiiler(jclFactory , jcl, message).run
+      }
+
       case _ => sender ! Error("Wrong param type")
     }
   }
