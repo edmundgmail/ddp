@@ -1,12 +1,13 @@
 package com.ddp.jarmanager
 
-import java.io.{BufferedInputStream, File, FileInputStream}
+import java.io._
+import java.util.jar.{Attributes, JarEntry, JarOutputStream}
 
 import com.twitter.util.Eval
 import org.apache.hadoop.conf.Configuration
 import org.apache.hadoop.fs.{FileSystem, Path}
 import org.xeustechnologies.jcl.{JarClassLoader, JclObjectFactory}
-import org.apache.commons.io.filefilter.{FalseFileFilter, TrueFileFilter}
+import org.apache.commons.io.filefilter.{FalseFileFilter, HiddenFileFilter, TrueFileFilter}
 import org.apache.commons.io.{FileUtils, IOUtils}
 
 import scala.collection.JavaConversions.asScalaIterator
@@ -15,25 +16,22 @@ import scala.collection.JavaConversions.asScalaIterator
 /**
   * Created by cloudera on 9/3/16.
   */
-case class ScalaSourceParameter(hdfsPaths: String)
+case class ScalaSourceParameter(srcHdfsPath: String)
 
 case class ScalaSourceCompiiler ( jclFactory : JclObjectFactory, jcl: JarClassLoader, sourceFiles: ScalaSourceParameter) {
 
-
-
-
-
   def run():Unit = {
-    val folder = new File("./target/");
-    FileUtils.cleanDirectory(folder); //clean out directory (this is optional -- but good know)
-    FileUtils.forceDelete(folder); //delete directory
-    FileUtils.forceMkdir(folder); //
-    val eval = new Eval(Some(folder))
+
+    val  targetDir = new File("./target_" + System.currentTimeMillis + "_" + util.Random.nextInt(10000) + ".tmp")
+
+    targetDir.mkdir
+
+    val eval = new Eval(Some(targetDir))
     val conf = new Configuration
 
-    conf.set("fs.defaultFS", "hdfs://localhost:9000/")
+    conf.set("fs.defaultFS", "hdfs://localhost:8020/")
 
-    val pathArray = sourceFiles.hdfsPaths.split(":")
+    val pathArray = sourceFiles.srcHdfsPath.split(":")
     val fs = FileSystem.get (conf)
     for(p<-pathArray){
       val inputStream = new BufferedInputStream (fs.open (new Path( p) ) )
@@ -41,9 +39,8 @@ case class ScalaSourceCompiiler ( jclFactory : JclObjectFactory, jcl: JarClassLo
       inputStream.close()
     }
 
-     FileUtils.listFiles(folder, TrueFileFilter.INSTANCE, FalseFileFilter.INSTANCE ).iterator().foreach(
-       f=>jcl.add(new FileInputStream(f))
-     )
+    val jarFile = CreateJarFile.mkJar(targetDir, "Main")
+    jcl.add(jarFile)
 
   }
 

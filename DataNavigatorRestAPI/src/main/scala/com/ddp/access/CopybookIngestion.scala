@@ -17,7 +17,7 @@ import scala.concurrent.Future
       val conf = new hadoop.conf.Configuration
 
 
-      conf.set("fs.defaultFS", "hdfs://localhost:9000/")
+      conf.set("fs.defaultFS", "hdfs://localhost:8020/")
 
       conf.set(Constants.CopybookName, param.cpyBookName)
       conf.set(Constants.CopybookHdfsPath, param.cpyBookHdfsPath  )
