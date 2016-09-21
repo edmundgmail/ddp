@@ -12,9 +12,8 @@ import org.xeustechnologies.jcl.{JarClassLoader, JclObjectFactory}
 
 case class JarParamter(hdfsPaths:String) /*separated with ;*/
 
-case class JarLoader ( jclFactory : JclObjectFactory, jcl: JarClassLoader, jarParamter: JarParamter) {
-  val conf = new Configuration
-  conf.set("fs.defaultFS", "hdfs://localhost:9000/")
+case class JarLoader ( conf: Configuration, jclFactory : JclObjectFactory, jcl: JarClassLoader, jarParamter: JarParamter) {
+
   val pathArray = jarParamter.hdfsPaths.split(":")
   val fs = FileSystem.get (conf)
   for(p<-pathArray){

@@ -12,12 +12,10 @@ import scala.concurrent.Future
 /**
   * Created by cloudera on 9/3/16.
   */
-  case class CopybookIngestion (sqlContext : SparkSession, param: CopybookIngestionParameter) extends UserClassRunner{
+  case class CopybookIngestion (config: hadoop.conf.Configuration, sqlContext : SparkSession, param: CopybookIngestionParameter) extends UserClassRunner{
+
     override def run() : Any = {
-      val conf = new hadoop.conf.Configuration
-
-
-      conf.set("fs.defaultFS", "hdfs://localhost:8020/")
+      val conf = new hadoop.conf.Configuration(config)
 
       conf.set(Constants.CopybookName, param.cpyBookName)
       conf.set(Constants.CopybookHdfsPath, param.cpyBookHdfsPath  )
