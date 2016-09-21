@@ -14,7 +14,7 @@ case class JarParamter(hdfsPaths:String) /*separated with ;*/
 
 case class JarLoader ( jclFactory : JclObjectFactory, jcl: JarClassLoader, jarParamter: JarParamter) {
   val conf = new Configuration
-  conf.set("fs.defaultFS", "hdfs://localhost:8020/")
+  conf.set("fs.defaultFS", "hdfs://localhost:9000/")
   val pathArray = jarParamter.hdfsPaths.split(":")
   val fs = FileSystem.get (conf)
   for(p<-pathArray){

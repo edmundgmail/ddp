@@ -28,6 +28,12 @@
             <scope>test</scope>
         </dependency>
 
+        <dependency>
+            <groupId>com.ddp.access</groupId>
+            <artifactId>DataNavigatorUserApi</artifactId>
+            <version>1.0-SNAPSHOT</version>
+        </dependency>
+
         <dependency> <!-- Hadoop dependency -->
             <groupId>org.apache.hadoop</groupId>
             <artifactId>hadoop-common</artifactId>
@@ -152,7 +158,7 @@
     <artifactId>scala-reflect</artifactId>
     <version>${scala.version}</version>
 </dependency>
-        
+
 
     </dependencies>
  <build>

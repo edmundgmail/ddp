@@ -10,7 +10,7 @@ import org.apache.spark.sql.{DataFrame, SQLContext}
 import org.apache.spark.{SparkConf, SparkContext}
 import com.ddp.jarmanager.{JarLoader, JarParamter, ScalaSourceCompiiler, ScalaSourceParameter}
 import com.ddp.rest.WorkerActor.{Error, Ok}
-import com.ddp.userclass.UserClassRunner
+import com.ddp.userclass.{RunUserClass}
 import org.apache.commons.io.FileUtils
 import org.xeustechnologies.jcl.{JarClassLoader, JclObjectFactory}
 
@@ -65,7 +65,7 @@ class WorkerActor extends Actor with ActorLogging {
   def receive = {
     {
       case message : CopybookIngestionParameter => {
-          sender ! CopybookIngestion(sparkSession, message).generate()
+          sender ! CopybookIngestion(sparkSession, message).run()
       }
 
       case loadjars : JarParamter => {
@@ -77,7 +77,7 @@ class WorkerActor extends Actor with ActorLogging {
       }
 
       case message: UserClassParameter => {
-        sender ! UserClassRunner(jclFactory , jcl, sparkSession.sqlContext, message).run
+        sender ! RunUserClass(jclFactory , jcl, sparkSession.sqlContext, message).run
       }
 
       case message: ScalaSourceParameter => {

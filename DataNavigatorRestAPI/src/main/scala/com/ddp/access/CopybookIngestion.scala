@@ -12,8 +12,8 @@ import scala.concurrent.Future
 /**
   * Created by cloudera on 9/3/16.
   */
-  case class CopybookIngestion (sqlContext : SparkSession, param: CopybookIngestionParameter) extends TableGenerator{
-    override def generate() : Any = {
+  case class CopybookIngestion (sqlContext : SparkSession, param: CopybookIngestionParameter) extends UserClassRunner{
+    override def run() : Any = {
       val conf = new hadoop.conf.Configuration
 
 

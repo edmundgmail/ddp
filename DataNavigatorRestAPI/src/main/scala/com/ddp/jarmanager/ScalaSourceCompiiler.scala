@@ -29,7 +29,7 @@ case class ScalaSourceCompiiler ( jclFactory : JclObjectFactory, jcl: JarClassLo
     val eval = new Eval(Some(targetDir))
     val conf = new Configuration
 
-    conf.set("fs.defaultFS", "hdfs://localhost:8020/")
+    conf.set("fs.defaultFS", "hdfs://localhost:9000/")
 
     val pathArray = sourceFiles.srcHdfsPath.split(":")
     val fs = FileSystem.get (conf)
