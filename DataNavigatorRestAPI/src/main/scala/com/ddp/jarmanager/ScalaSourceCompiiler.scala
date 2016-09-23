@@ -18,18 +18,15 @@ import scala.collection.JavaConversions.asScalaIterator
   */
 case class ScalaSourceParameter(srcHdfsPath: String)
 
-case class ScalaSourceCompiiler ( jclFactory : JclObjectFactory, jcl: JarClassLoader, sourceFiles: ScalaSourceParameter) {
+case class ScalaSourceCompiiler (conf: Configuration, jclFactory : JclObjectFactory, jcl: JarClassLoader, sourceFiles: ScalaSourceParameter) {
 
   def run():Unit = {
 
-    val  targetDir = new File("./target_" + System.currentTimeMillis + "_" + util.Random.nextInt(10000) + ".tmp")
+    val  targetDir = new File("target_" + System.currentTimeMillis + "_" + util.Random.nextInt(10000) + ".tmp")
 
     targetDir.mkdir
 
     val eval = new Eval(Some(targetDir))
-    val conf = new Configuration
-
-    conf.set("fs.defaultFS", "hdfs://localhost:9000/")
 
     val pathArray = sourceFiles.srcHdfsPath.split(":")
     val fs = FileSystem.get (conf)
@@ -42,6 +39,8 @@ case class ScalaSourceCompiiler ( jclFactory : JclObjectFactory, jcl: JarClassLo
     val jarFile = CreateJarFile.mkJar(targetDir, "Main")
     jcl.add(jarFile)
 
+    FileUtils.forceDelete(targetDir)
+    FileUtils.forceDelete(new File(jarFile))
   }
 
 }

@@ -10,7 +10,8 @@ import org.apache.spark.sql.{DataFrame, SQLContext}
 import org.apache.spark.{SparkConf, SparkContext}
 import com.ddp.jarmanager.{JarLoader, JarParamter, ScalaSourceCompiiler, ScalaSourceParameter}
 import com.ddp.rest.WorkerActor.{Error, Ok}
-import com.ddp.userclass.{RunUserClass}
+import com.ddp.userclass.RunUserClass
+import com.typesafe.config.ConfigFactory
 import org.apache.commons.io.FileUtils
 import org.xeustechnologies.jcl.{JarClassLoader, JclObjectFactory}
 
@@ -41,6 +42,10 @@ object WorkerActor {
   case class Ok(msg: String)
   case class Error(msg: String)
 
+  val config = ConfigFactory.load()
+  val hadoopConfig = new hadoop.conf.Configuration
+  hadoopConfig.set("fs.defaultFS", config.getString("com.ddp.rest.defaultFS"))
+
   val sparkSession = org.apache.spark.sql.SparkSession.builder
     //.master("spark://eguo-linux:7077")
       .master("local[2]")
@@ -65,11 +70,11 @@ class WorkerActor extends Actor with ActorLogging {
   def receive = {
     {
       case message : CopybookIngestionParameter => {
-          sender ! CopybookIngestion(sparkSession, message).run()
+          sender ! CopybookIngestion(hadoopConfig, sparkSession, message).run()
       }
 
       case loadjars : JarParamter => {
-        sender ! JarLoader(jclFactory, jcl, loadjars)
+        sender ! JarLoader(hadoopConfig, jclFactory, jcl, loadjars)
       }
 
       case message : QueryParameter => {
@@ -81,7 +86,7 @@ class WorkerActor extends Actor with ActorLogging {
       }
 
       case message: ScalaSourceParameter => {
-        sender ! ScalaSourceCompiiler(jclFactory , jcl, message).run
+        sender ! ScalaSourceCompiiler(hadoopConfig, jclFactory , jcl, message).run
       }
 
       case _ => sender ! Error("Wrong param type")
