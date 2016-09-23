@@ -6,16 +6,19 @@ import org.apache.spark.sql.{SQLContext, SparkSession}
 import com.ddp.cpybook._
 import com.ddp.rest.CopybookIngestionParameter
 import com.ddp.rest.WorkerActor.Ok
+import com.typesafe.config.Config
+
 import scala.concurrent.ExecutionContext.Implicits.global
 import scala.concurrent.Future
 
 /**
   * Created by cloudera on 9/3/16.
   */
-  case class CopybookIngestion (config: hadoop.conf.Configuration, sqlContext : SparkSession, param: CopybookIngestionParameter) extends UserClassRunner{
+  case class CopybookIngestion (config: Config, sqlContext : SparkSession, param: CopybookIngestionParameter) extends UserClassRunner{
 
     override def run() : Any = {
-      val conf = new hadoop.conf.Configuration(config)
+      val conf = new hadoop.conf.Configuration
+      conf.set("fs.defaultFS", config.getString("com.ddp.rest.defaultFS"))
 
       conf.set(Constants.CopybookName, param.cpyBookName)
       conf.set(Constants.CopybookHdfsPath, param.cpyBookHdfsPath  )
@@ -26,12 +29,16 @@ import scala.concurrent.Future
       conf.set(Constants.CopybookFont, param.cpybookFont)
       val tempTable = param.cpyBookName + "_temp_1"
 
-      Future{
-        val trips = sqlContext.cbFile(conf)
-        trips.createOrReplaceTempView(tempTable)
-        trips.cache()
-      }
-
+      //Future {
+        try {
+          val trips = sqlContext.cbFile(conf)
+          trips.createOrReplaceTempView(tempTable)
+          trips.cache()
+          }
+          catch {
+          case e: Throwable => e.printStackTrace()
+        }
+      //}
       Ok("Table name = " + tempTable + ", appid =" + sqlContext.sparkContext.applicationId)
 
 

@@ -43,8 +43,8 @@ object WorkerActor {
   case class Error(msg: String)
 
   val config = ConfigFactory.load()
-  val hadoopConfig = new hadoop.conf.Configuration
-  hadoopConfig.set("fs.defaultFS", config.getString("com.ddp.rest.defaultFS"))
+  //val hadoopConfig = new hadoop.conf.Configuration
+  //hadoopConfig.set("fs.defaultFS", config.getString("com.ddp.rest.defaultFS"))
 
   val sparkSession = org.apache.spark.sql.SparkSession.builder
     //.master("spark://eguo-linux:7077")
@@ -70,11 +70,11 @@ class WorkerActor extends Actor with ActorLogging {
   def receive = {
     {
       case message : CopybookIngestionParameter => {
-          sender ! CopybookIngestion(hadoopConfig, sparkSession, message).run()
+          sender ! CopybookIngestion(config, sparkSession, message).run()
       }
 
       case loadjars : JarParamter => {
-        sender ! JarLoader(hadoopConfig, jclFactory, jcl, loadjars)
+        sender ! JarLoader(config, jclFactory, jcl, loadjars)
       }
 
       case message : QueryParameter => {
