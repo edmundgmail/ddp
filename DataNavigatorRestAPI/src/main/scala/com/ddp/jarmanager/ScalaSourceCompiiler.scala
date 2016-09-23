@@ -4,11 +4,13 @@ import java.io._
 import java.util.jar.{Attributes, JarEntry, JarOutputStream}
 
 import com.twitter.util.Eval
+import com.typesafe.config.Config
 import org.apache.hadoop.conf.Configuration
 import org.apache.hadoop.fs.{FileSystem, Path}
 import org.xeustechnologies.jcl.{JarClassLoader, JclObjectFactory}
 import org.apache.commons.io.filefilter.{FalseFileFilter, HiddenFileFilter, TrueFileFilter}
 import org.apache.commons.io.{FileUtils, IOUtils}
+import org.apache.hadoop
 
 import scala.collection.JavaConversions.asScalaIterator
 
@@ -18,7 +20,7 @@ import scala.collection.JavaConversions.asScalaIterator
   */
 case class ScalaSourceParameter(srcHdfsPath: String)
 
-case class ScalaSourceCompiiler (conf: Configuration, jclFactory : JclObjectFactory, jcl: JarClassLoader, sourceFiles: ScalaSourceParameter) {
+case class ScalaSourceCompiiler (config: Config, jclFactory : JclObjectFactory, jcl: JarClassLoader, sourceFiles: ScalaSourceParameter) {
 
   def run():Unit = {
 
@@ -29,6 +31,8 @@ case class ScalaSourceCompiiler (conf: Configuration, jclFactory : JclObjectFact
     val eval = new Eval(Some(targetDir))
 
     val pathArray = sourceFiles.srcHdfsPath.split(":")
+    val conf = new hadoop.conf.Configuration
+    conf.set("fs.defaultFS", config.getString("com.ddp.rest.defaultFS"))
     val fs = FileSystem.get (conf)
     for(p<-pathArray){
       val inputStream = new BufferedInputStream (fs.open (new Path( p) ) )

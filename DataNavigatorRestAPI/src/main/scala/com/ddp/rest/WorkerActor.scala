@@ -86,7 +86,7 @@ class WorkerActor extends Actor with ActorLogging {
       }
 
       case message: ScalaSourceParameter => {
-        sender ! ScalaSourceCompiiler(hadoopConfig, jclFactory , jcl, message).run
+        sender ! ScalaSourceCompiiler(config, jclFactory , jcl, message).run
       }
 
       case _ => sender ! Error("Wrong param type")
