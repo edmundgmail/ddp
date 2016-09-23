@@ -9,7 +9,7 @@ import MediaTypes._
 import akka.actor.{Actor, ActorLogging, ActorSystem, Props}
 import akka.pattern.ask
 import akka.util.Timeout
-import org.json4s.{DefaultFormats, Formats}
+//import org.json4s.{DefaultFormats, Formats}
 import spray.can.Http
 import spray.can.server.Stats
 import spray.http.StatusCodes._
@@ -21,9 +21,9 @@ import scala.concurrent.ExecutionContext
 import scala.concurrent.duration._
 
 /* Used to mix in Spray's Marshalling Support with json4s */
-object Json4sProtocol extends Json4sSupport {
-  implicit def json4sFormats: Formats = DefaultFormats
-}
+//object Json4sProtocol extends Json4sSupport {
+  //implicit def json4sFormats: Formats = DefaultFormats
+//}
 
 
 // we don't implement our route structure directly in the service actor because
@@ -37,8 +37,12 @@ class MyServiceActor extends Actor with MyService {
   // this actor only runs our route, but you could add
   // other things here, like request stream processing
   // or timeout handling
-  def receive = runRoute(myRoute)
+  //def receive = runRoute(myRoute)
 
+  def receive = runRoute(myRoute ~ staticRoute)
+
+  def staticRoute: Route =
+    path("")(getFromResource("webapp/index.html")) ~ getFromResourceDirectory("webapp")
 
 }
 
@@ -47,7 +51,7 @@ class MyServiceActor extends Actor with MyService {
 
 // this trait defines our service behavior independently from the service actor
 trait MyService extends HttpService {
-  import Json4sProtocol._
+  //import Json4sProtocol._
   import WorkerActor._
   implicit def executionContext = actorRefFactory.dispatcher
   implicit val timeout = Timeout(5 seconds)
@@ -55,8 +59,9 @@ trait MyService extends HttpService {
   val worker = actorRefFactory.actorOf(Props[WorkerActor], "worker")
 
   val myRoute = {
+    /*
       path("entity") {
-        post {
+        options {
           respondWithStatus(Created) {
             entity(as[CopybookIngestionParameter]) { someObject =>
               doCreate(someObject)
@@ -96,14 +101,8 @@ trait MyService extends HttpService {
               }
             }
          }
-        } ~
-        path("spray-json-message") {
-          get {
-            complete {
-              "Hello mama!"
-            }
-          }
-        } ~
+        } ~*/
+    pathPrefix("css") { get { getFromResourceDirectory("app") } }~
         path("spray-html") {
           get {
             respondWithMediaType(`text/html`) {
