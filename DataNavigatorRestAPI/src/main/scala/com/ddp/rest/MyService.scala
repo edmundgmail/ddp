@@ -42,7 +42,7 @@ class MyServiceActor extends Actor with MyService {
   def receive = runRoute(myRoute ~ staticRoute)
 
   def staticRoute: Route =
-    path("")(getFromResource("webapp/index.html")) ~ getFromResourceDirectory("webapp")
+    path("")(getFromResource("app/index.html")) ~ getFromResourceDirectory("app")
 
 }
 

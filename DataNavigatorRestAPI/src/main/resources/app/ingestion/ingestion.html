@@ -1,0 +1,52 @@
+
+
+<div ng-controller="ingestionCtrl">
+
+Please select file type: <select ng-model="selection" >
+<option ng-repeat="item in items" value="{{item}}"> {{item}}</option>
+</select>
+
+
+    <div class="animate-switch-container"
+      ng-switch on="selection">
+        <div class="animate-switch" ng-switch-when="copybook">
+            <form name="copybook" ng-submit="RegisterCopybook()" >
+               Copybook Name:  <input type="text"  ng-model="copybookinfo.cpyBookName" required/> <br/>
+               Copybook HDFS Path: <input type="text"  class="form-control" ng-model="copybookinfo.cpyBookHdfsPath" required/><br/>
+               Data file HDFS Path: <input type="text"  class="form-control" ng-model="copybookinfo.dataFileHdfsPath" required/><br/>
+
+               File Structure: <select ng-model="copybookinfo.fileStructure">
+               <option ng-repeat="fileStructure in copybook_fileStructures" value="{{fileStructure}}">{{fileStructure}} </option> </select><br/>
+
+               Binary Format: <select ng-model="copybookinfo.binaryFormat">
+               <option ng-repeat="binaryFormat in copybook_binaryFormats" value="{{binaryFormat}}"> {{binaryFormat}}</option> </select><br/>
+
+               Font: <select ng-model="copybookinfo.fontValue">
+               <option ng-repeat="fontValue in copybook_fontValues" value="{{fontValue}}"> {{fontValue}}</option> </select><br/>
+
+               Split Options: <select ng-model="copybookinfo.splitOption">
+               <option ng-repeat="splitOption in copybook_splitOptions" value="{{splitOption}}"> {{splitOption}}</option> </select><br/>
+
+               <input type="submit" value="RegisterCopybook">
+           </form>
+
+        </div>
+        <div class="animate-switch" ng-switch-when="home">
+      <form name="myForm2" ng-submit="ingestionCtrl.register()">
+               Name2: <input type="text" ng-model="ingestionCtrl.user.name">
+               Email2: <input type="email" ng-model="ingestionCtrl.user.email">
+               <input type="submit" value="Register">
+           </form>
+        </div>
+        <div class="animate-switch" ng-switch-default>
+        <form name="myForm" ng-submit="ingestionCtrl.register()">
+               Name: <input type="text" ng-model="ingestionCtrl.user.name">
+               Email: <input type="email" ng-model="ingestionCtrl.user.email">
+               <input type="submit" value="Register">
+           </form>
+           </div>
+    </div>
+
+  
+</div>
+
