@@ -159,6 +159,14 @@
     <version>${scala.version}</version>
 </dependency>
 
+        <!-- https://mvnrepository.com/artifact/com.wandoulabs.akka/spray-websocket_2.11 -->
+        <dependency>
+            <groupId>com.wandoulabs.akka</groupId>
+            <artifactId>spray-websocket_2.11</artifactId>
+            <version>0.1.4</version>
+        </dependency>
+
+
 
     </dependencies>
  <build>

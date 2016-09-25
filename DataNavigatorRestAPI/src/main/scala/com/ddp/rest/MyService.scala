@@ -3,19 +3,20 @@ package com.ddp.rest
 import java.io.{ByteArrayInputStream, FileOutputStream}
 import java.util.concurrent.Executors
 
-import akka.actor.{Actor, Props}
+import akka.actor.{Actor, ActorLogging, ActorRef, ActorSystem, Props}
 import spray.http._
 import MediaTypes._
-import akka.actor.{Actor, ActorLogging, ActorSystem, Props}
 import akka.pattern.ask
 import akka.util.Timeout
 import org.json4s.{DefaultFormats, Formats}
-import spray.can.Http
+import spray.can.{Http, websocket}
 import spray.can.server.Stats
 import spray.http.StatusCodes._
 import spray.httpx.Json4sSupport
 import spray.routing._
 import com.ddp.jarmanager.{JarParamter, ScalaSourceParameter}
+import spray.can.websocket.FrameCommandFailed
+import spray.can.websocket.frame.{BinaryFrame, TextFrame}
 
 import scala.concurrent.ExecutionContext
 import scala.concurrent.duration._
@@ -26,9 +27,12 @@ object Json4sProtocol extends Json4sSupport {
 }
 
 
+
 // we don't implement our route structure directly in the service actor because
 // we want to be able to test it independently, without having to spin up an actor
 class MyServiceActor extends Actor with MyService {
+
+
 
   // the HttpService trait defines only one abstract member, which
   // connects the services environment to the enclosing actor or test
@@ -39,14 +43,24 @@ class MyServiceActor extends Actor with MyService {
   // or timeout handling
   //def receive = runRoute(myRoute)
 
-  def receive = runRoute(myRoute ~ staticRoute)
+  def receive = {
+    /*
+    case Http.Connected(remoteAddress, localAddress) =>
+      val serverConnection = sender()
+      val conn = context.actorOf(WebSocketWorker.props(serverConnection))
+      serverConnection ! Http.Register(conn)
+    case PushToChildren(msg: String) =>
+      val children = context.children
+      println("pushing to all children : " + msg)
+      children.foreach(ref => ref ! Push(msg))
+*/
+    runRoute(myRoute ~ staticRoute)
+  }
 
   def staticRoute: Route =
     path("")(getFromResource("app/index.html")) ~ getFromResourceDirectory("app")
 
 }
-
-
 
 
 // this trait defines our service behavior independently from the service actor

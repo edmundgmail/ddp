@@ -50,6 +50,4 @@ return $resource('/entity',{},
   $http.defaults.headers.common['Content-Type']= "application/json";
   var res = $http.post('/entity',JSON.stringify($scope.copybookinfo));
 
-
-        };
   });
