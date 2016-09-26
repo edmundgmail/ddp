@@ -1,9 +1,11 @@
 package com.ddp.rest
 
-import java.io.File
+import java.io.{File, OutputStream}
 import java.nio.file.{Files, Paths}
 
+import org.apache.log4j
 import akka.actor.{Actor, ActorLogging}
+import akka.util.Timeout
 import com.ddp.access.CopybookIngestion
 import org.apache.hadoop
 import org.apache.spark.sql.{DataFrame, SQLContext}
@@ -13,9 +15,10 @@ import com.ddp.rest.WorkerActor.{Error, Ok}
 import com.ddp.userclass.RunUserClass
 import com.typesafe.config.ConfigFactory
 import org.apache.commons.io.FileUtils
+import org.apache.log4j.{Appender, Logger}
 import org.xeustechnologies.jcl.{JarClassLoader, JclObjectFactory}
 
-import scala.concurrent.{ExecutionContext, Future}
+import scala.concurrent.{Await, ExecutionContext, Future}
 import scala.io.Source
 
 
@@ -54,6 +57,9 @@ object WorkerActor {
       .enableHiveSupport()
     .getOrCreate()
 
+
+
+
   //setMaster("spark://quickstart.cloudera:7077")
   // Create the context and set the batch size
   //import sqlContext._
@@ -66,11 +72,28 @@ object WorkerActor {
 
 class WorkerActor extends Actor with ActorLogging {
   import WorkerActor._
+  import akka.util.Timeout
+  import scala.concurrent.duration._
+
+  def actorRefFactory = context
+
+  implicit val resolveTimeout = Timeout(5 seconds)
+  //val wss = actorRefFactory.actorSelection("/user/wssserver1/worker1").resolveOne(), resolveTimeout.duration).asInstanceOf[OutputStream]
+
 
   def receive = {
     {
       case message : CopybookIngestionParameter => {
-          sender ! CopybookIngestion(config, sparkSession, message).run()
+
+        //actorRefFactory.actorSelection("/user/wssserver1/worker1") ! Push("again hello, world")
+        lazy val layout = Logger.getRootLogger.getAppender("console").getLayout
+        //Logger.getRootLogger.addAppender(new OutputStreamAppender(layout, wss))
+
+
+        lazy val wss = Await.result(actorRefFactory.actorSelection("/user/wssserver1/worker1").resolveOne(), resolveTimeout.duration).asInstanceOf[OutputStream]
+
+        Logger.getRootLogger.addAppender(new org.apache.log4j.WriterAppender(layout, wss))
+        sender ! CopybookIngestion(config, sparkSession, message).run()
       }
 
       case loadjars : JarParamter => {
