@@ -24,7 +24,7 @@ import spray.routing.HttpServiceActor
       // when a new connection comes in we register a WebSocketConnection actor as the per connection handler
       case Http.Connected(remoteAddress, localAddress) =>
         val serverConnection = sender()
-        val conn = context.actorOf(WebSocketWorker.props(serverConnection), "worker1")
+        val conn = context.actorOf(WebSocketWorker.props(serverConnection), "worker"+System.currentTimeMillis())
         serverConnection ! Http.Register(conn)
       case PushToChildren(msg: String) =>
         val children = context.children
@@ -36,36 +36,8 @@ import spray.routing.HttpServiceActor
   object WebSocketWorker {
     def props(serverConnection: ActorRef) = Props(classOf[WebSocketWorker], serverConnection)
   }
-  class WebSocketWorker(val serverConnection: ActorRef) extends OutputStream with websocket.WebSocketServerWorker  {
+  class WebSocketWorker(val serverConnection: ActorRef) extends  websocket.WebSocketServerWorker  {
     override def receive = handshaking orElse /* businessLogicNoUpgrade orElse*/closeLogic
-    var buffer : Array[Byte] = new Array[Byte] (4096)
-    var index  = 0
-
-    override def write(b:Int): Unit ={
-      buffer(index) = b.toByte
-      index += 1
-      if(index == 4096)
-        flush()
-    }
-
-    override def flush(): Unit = {
-        if(index > 0){
-            self ! BinaryFrame.apply(ByteString.fromArray(buffer, 0, index))
-            index = 0
-        }
-    }
-
-    override def write(b: Array[Byte]): Unit = {
-      write(b, 0, b.length)
-    }
-
-    override def write(b: Array[Byte], off: Int, len: Int): Unit = {
-
-        flush()
-
-        self ! BinaryFrame.apply(ByteString.fromArray(b, off, len))
-
-    }
 
     def businessLogic: Receive = {
       // just bounce frames back for Autobahn testsuite

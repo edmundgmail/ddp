@@ -4,8 +4,8 @@ import java.io.{File, OutputStream}
 import java.nio.file.{Files, Paths}
 
 import org.apache.log4j
-import akka.actor.{Actor, ActorLogging}
-import akka.util.Timeout
+import akka.actor.{Actor, ActorLogging, Props}
+import akka.util.{ByteString, Timeout}
 import com.ddp.access.CopybookIngestion
 import org.apache.hadoop
 import org.apache.spark.sql.{DataFrame, SQLContext}
@@ -15,15 +15,17 @@ import com.ddp.rest.WorkerActor.{Error, Ok}
 import com.ddp.userclass.RunUserClass
 import com.typesafe.config.ConfigFactory
 import org.apache.commons.io.FileUtils
-import org.apache.log4j.{Appender, Logger}
+import org.apache.log4j.{Appender, Logger, WriterAppender}
 import org.xeustechnologies.jcl.{JarClassLoader, JclObjectFactory}
+import spray.can.websocket.frame.{BinaryFrame, TextFrame}
 
 import scala.concurrent.{Await, ExecutionContext, Future}
 import scala.io.Source
+import scala.util.Success
 
 
 
-
+case class WorkerInitialize(hello : String)
 
 case class CopybookIngestionParameter(
                                cpyBookName : String,
@@ -70,45 +72,69 @@ object WorkerActor {
 }
 
 
-class WorkerActor extends Actor with ActorLogging {
+class WorkerActor extends Actor with ActorLogging{
   import WorkerActor._
   import akka.util.Timeout
   import scala.concurrent.duration._
 
-  def actorRefFactory = context
+  implicit def actorRefFactory = context
+  import ExecutionContext.Implicits.global
+  
+  //actorRefFactory.system.scheduler.scheduleOnce(5 second, self, WorkerInitialize("hello"))
+  private var initailized = 0
 
-  implicit val resolveTimeout = Timeout(5 seconds)
-  //val wss = actorRefFactory.actorSelection("/user/wssserver1/worker1").resolveOne(), resolveTimeout.duration).asInstanceOf[OutputStream]
+  def workerInitialize() = {
+
+    val websocketclient = actorRefFactory.actorOf(Props[WebSocketClientService], "WebSocketClientService1")
+
+    //implicit val resolveTimeout = Timeout(5 seconds)
+    //val wss = actorRefFactory.actorSelection("/user/wssserver1/worker1").resolveOne(), resolveTimeout.duration).asInstanceOf[OutputStream]
+    import scala.concurrent._
+
+    //if(initailized==0) {
+
+      //val layout = Logger.getRootLogger.getAppender("console").getLayout
+      //val wss = actorRefFactory.actorSelection("/user/wssserver1/worker1")
+      //actorRefFactory.actorSelection("/user/wssserver1/worker1").resolveOne().onComplete(
+      //Logger.getRootLogger.addAppender(new WriterAppender(layout, new AkkaActorOutputstream(wss)))
+      //System.out.println("done with logger setup")
+      //initailized = 1
+    //}
+      //wss ! TextFrame("hello, wolrd")
+    //}
+}
 
 
   def receive = {
     {
+      case msg: WorkerInitialize => {
+        workerInitialize()
+        sender ! Ok("intialized , hello = " + msg.hello)
+      }
+
       case message : CopybookIngestionParameter => {
+        workerInitialize()
 
-        //actorRefFactory.actorSelection("/user/wssserver1/worker1") ! Push("again hello, world")
-        lazy val layout = Logger.getRootLogger.getAppender("console").getLayout
-        //Logger.getRootLogger.addAppender(new OutputStreamAppender(layout, wss))
-
-
-        lazy val wss = Await.result(actorRefFactory.actorSelection("/user/wssserver1/worker1").resolveOne(), resolveTimeout.duration).asInstanceOf[OutputStream]
-
-        Logger.getRootLogger.addAppender(new org.apache.log4j.WriterAppender(layout, wss))
         sender ! CopybookIngestion(config, sparkSession, message).run()
       }
 
       case loadjars : JarParamter => {
+        workerInitialize()
         sender ! JarLoader(config, jclFactory, jcl, loadjars)
       }
 
       case message : QueryParameter => {
+        workerInitialize()
           sender ! Query(sparkSession.sqlContext, message).query
       }
 
       case message: UserClassParameter => {
+        workerInitialize()
         sender ! RunUserClass(jclFactory , jcl, sparkSession.sqlContext, message).run
       }
 
       case message: ScalaSourceParameter => {
+        workerInitialize()
         sender ! ScalaSourceCompiiler(config, jclFactory , jcl, message).run
       }
 

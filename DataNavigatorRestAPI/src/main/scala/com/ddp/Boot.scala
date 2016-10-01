@@ -34,7 +34,7 @@ object Boot extends App {
   system.actorSelection("/user/IO-HTTP") ! PoisonPill
 
   IO(Http) ? Http.Bind(service, interface = "0.0.0.0", port = 8881)
-
+  //service ! rest.WorkerInitialize("Hello")
   sys.addShutdownHook({ IO(UHttp) ! Http.Unbind; IO(Http) ! Http.Unbind; system.shutdown })
 
 }

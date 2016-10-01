@@ -36,7 +36,7 @@ class MyServiceActor extends Actor with MyService {
 
   // the HttpService trait defines only one abstract member, which
   // connects the services environment to the enclosing actor or test
-  def actorRefFactory = context
+  implicit def actorRefFactory = context
 
   // this actor only runs our route, but you could add
   // other things here, like request stream processing
@@ -70,11 +70,19 @@ trait MyService extends HttpService {
   implicit def executionContext = actorRefFactory.dispatcher
   implicit val timeout = Timeout(5 seconds)
 
-  val worker = actorRefFactory.actorOf(Props[WorkerActor], "worker")
+  val worker = actorRefFactory.actorOf(Props[WorkerActor], "worker2")
+
 
   val myRoute = {
 
       path("entity") {
+
+        post {
+          respondWithStatus(Accepted) {
+            entity(as[WorkerInitialize]) { someObject =>
+              doInitialize(someObject)
+            }}
+        } ~
         post {
           respondWithStatus(Created) {
             entity(as[CopybookIngestionParameter]) { someObject =>
@@ -166,6 +174,19 @@ def doJarManager(param:JarParamter) = {
 def doQuery(param:QueryParameter) = {
   complete{
     import WorkerActor._
+    (worker ? param)
+      .mapTo[Ok]
+      .map(result => s"I got a response: ${result}")
+      .recover { case _ => "error" }
+  }
+}
+
+
+def doInitialize(param: WorkerInitialize) = {
+  complete{
+    //directive to finish the request.
+    import WorkerActor._
+
     (worker ? param)
       .mapTo[Ok]
       .map(result => s"I got a response: ${result}")
