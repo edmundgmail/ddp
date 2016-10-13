@@ -13,8 +13,10 @@ import spray.http.HttpRequest
 import spray.routing.HttpServiceActor
 
 
-  final case class Push(msg: String)
+  final case class Push(msg: TextFrame)
   final case class PushToChildren(msg: String)
+  final case class PushText(msg: TextFrame)
+  final case class PushBinary(msg: BinaryFrame)
 
   object WebSocketServer {
     def props() = Props(classOf[WebSocketServer])
@@ -29,7 +31,11 @@ import spray.routing.HttpServiceActor
       case PushToChildren(msg: String) =>
         val children = context.children
         println("pushing to all children : " + msg)
-        children.foreach(ref => ref ! Push(msg))
+        children.foreach(ref => ref ! Push(TextFrame(msg)))
+
+      case PushText(msg: TextFrame) =>
+        val children = context.children
+        children.foreach(ref=>ref ! Push(msg))
     }
   }
 

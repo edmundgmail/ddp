@@ -40,7 +40,7 @@ case class CopybookIngestionParameter(
 case class QueryParameter(sql:String)
 
 case class UserClassParameter (userClassName: String)
-
+case class GetConnections()
 
 
 object WorkerActor {
@@ -84,24 +84,12 @@ class WorkerActor extends Actor with ActorLogging{
   private var initailized = 0
 
   def workerInitialize() = {
+      val wss = actorRefFactory.actorSelection("/user/wssserver1")
 
-    val websocketclient = actorRefFactory.actorOf(Props[WebSocketClientService], "WebSocketClientService1")
+    val layout = Logger.getRootLogger.getAppender("console").getLayout
+      Logger.getRootLogger.addAppender(new WriterAppender(layout, new AkkaActorOutputstream(wss)))
 
-    //implicit val resolveTimeout = Timeout(5 seconds)
-    //val wss = actorRefFactory.actorSelection("/user/wssserver1/worker1").resolveOne(), resolveTimeout.duration).asInstanceOf[OutputStream]
-    import scala.concurrent._
-
-    //if(initailized==0) {
-
-      //val layout = Logger.getRootLogger.getAppender("console").getLayout
-      //val wss = actorRefFactory.actorSelection("/user/wssserver1/worker1")
-      //actorRefFactory.actorSelection("/user/wssserver1/worker1").resolveOne().onComplete(
-      //Logger.getRootLogger.addAppender(new WriterAppender(layout, new AkkaActorOutputstream(wss)))
-      //System.out.println("done with logger setup")
-      //initailized = 1
-    //}
-      //wss ! TextFrame("hello, wolrd")
-    //}
+      wss ! PushToChildren("hello, wolrd")
 }
 
 
@@ -137,7 +125,9 @@ class WorkerActor extends Actor with ActorLogging{
         workerInitialize()
         sender ! ScalaSourceCompiiler(config, jclFactory , jcl, message).run
       }
-
+      case message : GetConnections => {
+        sender ! com.ddp.jdbc.MetaDataDB.getConnections()
+      }
       case _ => sender ! Error("Wrong param type")
     }
   }

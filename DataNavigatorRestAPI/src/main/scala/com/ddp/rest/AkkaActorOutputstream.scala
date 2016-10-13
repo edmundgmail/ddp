@@ -4,7 +4,7 @@ import java.io.OutputStream
 
 import akka.actor.{Actor, ActorRef, ActorSelection}
 import akka.util.ByteString
-import spray.can.websocket.frame.BinaryFrame
+import spray.can.websocket.frame.{BinaryFrame, TextFrame}
 
 /**
   * Created by cloudera on 9/27/16.
@@ -22,7 +22,7 @@ case class AkkaActorOutputstream (val actor: ActorSelection) extends OutputStrea
 
   override def flush(): Unit = {
     if(index > 0){
-      actor ! BinaryFrame.apply(ByteString.fromArray(buffer, 0, index))
+      actor ! PushText(TextFrame(ByteString.fromArray(buffer, 0, index).toString()))
       index = 0
     }
   }
@@ -35,7 +35,7 @@ case class AkkaActorOutputstream (val actor: ActorSelection) extends OutputStrea
 
     flush()
 
-    actor ! BinaryFrame.apply(ByteString.fromArray(b, off, len))
+    actor ! PushText( TextFrame(ByteString.fromArray(b, off, len)))
 
   }
 

@@ -8,13 +8,14 @@ import spray.http._
 import MediaTypes._
 import akka.pattern.ask
 import akka.util.Timeout
-import org.json4s.{DefaultFormats, Formats}
+import org.json4s.{DefaultFormats, FieldSerializer, Formats}
 import spray.can.{Http, websocket}
 import spray.can.server.Stats
 import spray.http.StatusCodes._
 import spray.httpx.Json4sSupport
 import spray.routing._
 import com.ddp.jarmanager.{JarParamter, ScalaSourceParameter}
+import com.ddp.jdbc.DataSourceConnection
 import spray.can.websocket.FrameCommandFailed
 import spray.can.websocket.frame.{BinaryFrame, TextFrame}
 
@@ -58,7 +59,8 @@ class MyServiceActor extends Actor with MyService {
   }
 
   def staticRoute: Route =
-    path("")(getFromResource("app/index.html")) ~ getFromResourceDirectory("app")
+    path("")(getFromResource("app/index.html")) ~ getFromResourceDirectory("app") ~
+    path("web")(getFromResource("webapp/index.html")) ~ getFromResourceDirectory("webapp")
 
 }
 
@@ -74,9 +76,13 @@ trait MyService extends HttpService {
 
 
   val myRoute = {
+      path("metadata" / "connections"){
+            get{
+                 getConnections
+              }
 
+      } ~
       path("entity") {
-
         post {
           respondWithStatus(Accepted) {
             entity(as[WorkerInitialize]) { someObject =>
@@ -140,10 +146,10 @@ trait MyService extends HttpService {
         }
   }
 
+  import WorkerActor._
 
   def doScalaSource(param:ScalaSourceParameter) = {
       complete{
-        import WorkerActor._
         (worker ? param)
           .mapTo[Ok]
           .map(result => s"I got a response: ${result}")
@@ -153,7 +159,6 @@ trait MyService extends HttpService {
 
   def doUserClass(param:UserClassParameter) = {
     complete{
-      import WorkerActor._
       (worker ? param)
         .mapTo[Ok]
         .map(result => s"I got a response: ${result}")
@@ -163,7 +168,6 @@ trait MyService extends HttpService {
 
 def doJarManager(param:JarParamter) = {
   complete{
-    import WorkerActor._
     (worker ? param)
       .mapTo[Ok]
       .map(result => s"I got a response: ${result}")
@@ -173,7 +177,6 @@ def doJarManager(param:JarParamter) = {
 
 def doQuery(param:QueryParameter) = {
   complete{
-    import WorkerActor._
     (worker ? param)
       .mapTo[Ok]
       .map(result => s"I got a response: ${result}")
@@ -185,7 +188,6 @@ def doQuery(param:QueryParameter) = {
 def doInitialize(param: WorkerInitialize) = {
   complete{
     //directive to finish the request.
-    import WorkerActor._
 
     (worker ? param)
       .mapTo[Ok]
@@ -196,12 +198,6 @@ def doInitialize(param: WorkerInitialize) = {
 
 def doCreate(param: CopybookIngestionParameter) = {
   complete {
-  //We use the Ask pattern to return
-  //a future from our worker Actor,
-  //which then gets passed to the complete
-  //directive to finish the request.
-    import WorkerActor._
-
     (worker ? param)
       .mapTo[Ok]
       .map(result => s"I got a response: ${result}")
@@ -209,4 +205,20 @@ def doCreate(param: CopybookIngestionParameter) = {
   }
 }
 
+
+def getConnections = {
+  import spray.json.DefaultJsonProtocol
+  object MyJsonProtocol extends DefaultJsonProtocol {
+    implicit val dataSourceConnectionFormat = jsonFormat1(DataSourceConnection)
+  }
+
+  respondWithMediaType(`application/json`) {
+    complete {
+      val s = (worker ? new GetConnections).mapTo[Stream[DataSourceConnection]]
+      println(s)
+      s
+    }
+  }
+
+}
 }
