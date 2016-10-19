@@ -33,10 +33,13 @@ angular
                 {
                     name:'sbAdminApp',
                     files:[
+                    //'scripts/services/services.js',
+                    //'scripts/controllers/dummyController.js',
                     'scripts/directives/header/header.js',
                     'scripts/directives/header/header-notification/header-notification.js',
                     'scripts/directives/sidebar/sidebar.js',
                     'scripts/directives/sidebar/sidebar-search/sidebar-search.js'
+
                     ]
                 }),
                 $ocLazyLoad.load(
@@ -120,7 +123,8 @@ angular
             }),
             $ocLazyLoad.load({
                 name:'sbAdminApp',
-                files:['scripts/controllers/chartContoller.js']
+                files:['scripts/controllers/chartContoller.js'
+                ]
             })
           }
         }
@@ -153,6 +157,22 @@ angular
        templateUrl:'views/ui-elements/grid.html',
        url:'/grid'
    })
+      .state('dashboard.connectionDetail',{
+       templateUrl:'views/pages/connectionDetail.html',
+       url:'/connectionDetail/:connectionName',
+       controller: 'connectionDetailCtrl',
+        resolve: {
+          loadMyFiles:function($ocLazyLoad) {
+            return $ocLazyLoad.load({
+              name:'sbAdminApp',
+              files:[
+              'scripts/controllers/connnectionDetailController.js'
+              ]
+            })
+          }
+        }
+   })
+
   }]);
 
     

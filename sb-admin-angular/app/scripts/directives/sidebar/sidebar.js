@@ -20,24 +20,13 @@ angular.module('sbAdminApp')
         $scope.collapseVar = 0;
         $scope.multiCollapseVar = 0;
         //$http.defaults.headers.common['Content-Type']= "application/json";
-        var request_url='http://localhost:8881/metadata/connections';
-        $http({
-        method: 'JSONP',
-        url: request_url
-      }).success(function(data, status , header, config){
-            alert('Success')
-      })
-      .error(function(data, status , header, config){
-            alert('error='+data)
-      });
-        /*$scope.connections = [
-          {
-            "name":"spark1"
-          },
-          {
-            "name":"spark2"
-          }
-        ];*/
+        //$http.get('http://localhost:8080/greeting-javaconfig')
+        $http.get('http://localhost:8881/metadata/connections')
+         .then(function(response) {
+          $scope.connections = response.data;
+          alert("hello");
+        });
+     
         $scope.check = function(x){
           
           if(x==$scope.collapseVar)

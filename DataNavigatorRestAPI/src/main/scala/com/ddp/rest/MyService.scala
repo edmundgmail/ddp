@@ -8,6 +8,7 @@ import spray.http._
 import MediaTypes._
 import akka.pattern.ask
 import akka.util.Timeout
+import com.ddp.access.DataSourceDetail
 import org.json4s.{DefaultFormats, FieldSerializer, Formats}
 import spray.can.{Http, websocket}
 import spray.can.server.Stats
@@ -16,6 +17,7 @@ import spray.httpx.Json4sSupport
 import spray.routing._
 import com.ddp.jarmanager.{JarParamter, ScalaSourceParameter}
 import com.ddp.jdbc.DataSourceConnection
+import org.apache.spark.sql.{Dataset, Row}
 import spray.can.websocket.FrameCommandFailed
 import spray.can.websocket.frame.{BinaryFrame, TextFrame}
 
@@ -31,7 +33,7 @@ object Json4sProtocol extends Json4sSupport {
 
 // we don't implement our route structure directly in the service actor because
 // we want to be able to test it independently, without having to spin up an actor
-class MyServiceActor extends Actor with MyService {
+class MyServiceActor extends Actor with MyService  {
 
 
 
@@ -66,21 +68,28 @@ class MyServiceActor extends Actor with MyService {
 
 
 // this trait defines our service behavior independently from the service actor
-trait MyService extends HttpService {
+trait MyService extends HttpService with CorsSupport{
   import Json4sProtocol._
   import WorkerActor._
   implicit def executionContext = actorRefFactory.dispatcher
-  implicit val timeout = Timeout(5 seconds)
+  implicit val timeout = Timeout(200 seconds)
 
   val worker = actorRefFactory.actorOf(Props[WorkerActor], "worker2")
 
 
-  val myRoute = {
+  val myRoute = cors {
       path("metadata" / "connections"){
             get{
                  getConnections
               }
 
+      } ~
+      path("metadata" / "dataSources") {
+        get{
+          parameters("conn") {
+              conn => getDataSources(conn)
+          }
+        }
       } ~
       path("entity") {
         post {
@@ -147,7 +156,7 @@ trait MyService extends HttpService {
   }
 
   import WorkerActor._
-
+  //implicit val sendReceiveTimeout = akka.util.Timeout(4.minutes)
   def doScalaSource(param:ScalaSourceParameter) = {
       complete{
         (worker ? param)
@@ -184,7 +193,6 @@ def doQuery(param:QueryParameter) = {
   }
 }
 
-
 def doInitialize(param: WorkerInitialize) = {
   complete{
     //directive to finish the request.
@@ -206,6 +214,17 @@ def doCreate(param: CopybookIngestionParameter) = {
 }
 
 
+def getDataSources(conn:String)= {
+  import spray.json.DefaultJsonProtocol
+
+  respondWithMediaType(`application/json`) {
+    complete {
+      val s = (worker ? new GetDataSources(conn))
+      s
+    }
+  }
+}
+
 def getConnections = {
   import spray.json.DefaultJsonProtocol
   object MyJsonProtocol extends DefaultJsonProtocol {
@@ -215,7 +234,6 @@ def getConnections = {
   respondWithMediaType(`application/json`) {
     complete {
       val s = (worker ? new GetConnections).mapTo[Stream[DataSourceConnection]]
-      println(s)
       s
     }
   }

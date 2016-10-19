@@ -13,7 +13,7 @@
                         <a href="">New Connection</a>
                     </li>
                     <li ng-repeat="connection in connections"> 
-                        <a href="">{{connection.name}}</a>
+                        <a ui-sref="dashboard.connectionDetail({'connectionName': '{{connection.name}}'})">{{connection.name}}</a>
                     </li>
                     </ul>
             </li>

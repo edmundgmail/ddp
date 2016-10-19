@@ -8,7 +8,7 @@ import akka.actor.{Actor, ActorLogging, Props}
 import akka.util.{ByteString, Timeout}
 import com.ddp.access.CopybookIngestion
 import org.apache.hadoop
-import org.apache.spark.sql.{DataFrame, SQLContext}
+import org.apache.spark.sql.{DataFrame, SQLContext, SparkSession}
 import org.apache.spark.{SparkConf, SparkContext}
 import com.ddp.jarmanager.{JarLoader, JarParamter, ScalaSourceCompiiler, ScalaSourceParameter}
 import com.ddp.rest.WorkerActor.{Error, Ok}
@@ -42,6 +42,8 @@ case class QueryParameter(sql:String)
 case class UserClassParameter (userClassName: String)
 case class GetConnections()
 
+case class GetDataSources(conn:String)
+
 
 object WorkerActor {
   case class Ok(msg: String)
@@ -60,7 +62,9 @@ object WorkerActor {
     .getOrCreate()
 
 
-
+  val sparkSessionMap : Map[String, SparkSession] = Map(
+    "my-spark-app" -> sparkSession
+  )
 
   //setMaster("spark://quickstart.cloudera:7077")
   // Create the context and set the batch size
@@ -128,6 +132,10 @@ class WorkerActor extends Actor with ActorLogging{
       case message : GetConnections => {
         sender ! com.ddp.jdbc.MetaDataDB.getConnections()
       }
+      case message: GetDataSources => {
+        sender ! com.ddp.access.SparkMetadata.getDataSourceDetails(sparkSessionMap(message.conn), message)
+      }
+
       case _ => sender ! Error("Wrong param type")
     }
   }
