@@ -78,16 +78,23 @@ trait MyService extends HttpService with CorsSupport{
 
 
   val myRoute = cors {
-      path("metadata" / "connections"){
-            get{
-                 getConnections
-              }
+    path("metadata" / "connections") {
+      get {
+        getConnections
+      }
 
-      } ~
+    } ~
       path("metadata" / "dataSources") {
-        get{
+        get {
           parameters("conn") {
-              conn => getDataSources(conn)
+            conn => getDataSources(conn)
+          }
+        }
+      } ~
+      path("metadata" / "connHierarchy"){
+        get{
+          parameters ("conn") {
+            conn=>getConnHierarchy(conn)
           }
         }
       } ~
@@ -220,6 +227,17 @@ def getDataSources(conn:String)= {
   respondWithMediaType(`application/json`) {
     complete {
       val s = (worker ? new GetDataSources(conn))
+      s
+    }
+  }
+}
+
+def getConnHierarchy(conn:String) = {
+  import spray.json.DefaultJsonProtocol
+
+  respondWithMediaType(`application/json`) {
+    complete {
+      val s = (worker ? new GetConnectionHierarchy(conn))
       s
     }
   }

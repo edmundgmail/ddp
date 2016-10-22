@@ -44,6 +44,7 @@ case class GetConnections()
 
 case class GetDataSources(conn:String)
 
+case class GetConnectionHierarchy(conn:String)
 
 object WorkerActor {
   case class Ok(msg: String)
@@ -54,8 +55,8 @@ object WorkerActor {
   //hadoopConfig.set("fs.defaultFS", config.getString("com.ddp.rest.defaultFS"))
 
   val sparkSession = org.apache.spark.sql.SparkSession.builder
-    //.master("spark://eguo-linux:7077")
-      .master("local[2]")
+    .master("spark://t440:7077")
+      //.master("local[2]")
     .appName("my-spark-app")
     .config("spark.ui.port", "44040")
       .enableHiveSupport()
@@ -132,6 +133,11 @@ class WorkerActor extends Actor with ActorLogging{
       case message : GetConnections => {
         sender ! com.ddp.jdbc.MetaDataDB.getConnections()
       }
+
+      case message : GetConnectionHierarchy => {
+          sender!com.ddp.jdbc.MetaDataDB.getConnectionHierarchy(message)
+      }
+
       case message: GetDataSources => {
         sender ! com.ddp.access.SparkMetadata.getDataSourceDetails(sparkSessionMap(message.conn), message)
       }

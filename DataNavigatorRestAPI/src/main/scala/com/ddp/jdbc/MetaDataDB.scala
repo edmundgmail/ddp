@@ -2,6 +2,7 @@ package com.ddp.jdbc
 
 import java.sql.{Connection, DriverManager, ResultSet}
 
+import com.ddp.rest.GetConnectionHierarchy
 import com.ddp.rest.WorkerActor.Ok
 import com.typesafe.config.{Config, ConfigFactory}
 
@@ -10,6 +11,7 @@ import com.typesafe.config.{Config, ConfigFactory}
   */
 
 case class DataSourceConnection(name:String)
+case class ConnectionHierarchy(conn:String, datasource: String, dataentity:String, datafield:String, datatype:String)
 
 object MetaDataDB{
 
@@ -22,31 +24,17 @@ object MetaDataDB{
     }
   }
 
-  def getConnections(): Any/*List[DataSourceConnection]*/ = {
+  def getConnections(): Any/*Stream[DataSourceConnection]*/ = {
 
     try {
       val statement = Datasource.mysqlConnections.getConnection.createStatement()
       val resultSet = statement.executeQuery(
         """
-        select name from connections
+        select connection_name from connections
                                              """)
-      val s = streamFromResultSet(resultSet){ rs =>
-        DataSourceConnection(rs.getString("name"))
+      streamFromResultSet(resultSet){ rs =>
+        DataSourceConnection(rs.getString("connection_name"))
       }
-      /*      while ( resultSet.next() ) {
-          val name = resultSet.getString("name")
-          println("name = " + name)
-      }*/
-
-      s
-      /*
-      Ok( """
-     [
-        | {'name':'conn1'},
-        |{'name':'conn2'}
-        | ]
-      """
-     )*/
     }
     catch
     {
@@ -54,7 +42,25 @@ object MetaDataDB{
         null
     }
 
+  }
 
+  def getConnectionHierarchy(message:GetConnectionHierarchy) : Any = {
+    try {
+      val statement = Datasource.mysqlConnections.getConnection.prepareCall("call proc_connectionhierarchy(?)")
+      statement.setString(1, message.conn)
+      val hasResult = statement.execute()
+      val resultSet = statement.getResultSet
+
+      if(hasResult)
+        streamFromResultSet(resultSet){ rs =>
+          ConnectionHierarchy(message.conn, rs.getString("datasource_name"), rs.getString("dataentity_name"), rs.getString("datafield_name"), rs.getString("datatype"))
+        }
+    }
+    catch
+      {
+        case e:Exception => e.printStackTrace()
+          null
+      }
   }
 
 }

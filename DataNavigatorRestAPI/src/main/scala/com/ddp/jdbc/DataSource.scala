@@ -10,10 +10,10 @@ object Datasource {
 val config = ConfigFactory.load()
 
   def mysqlConnections: BasicDataSource ={
-    val driver = config.getString("com.ddp.rest.mysqlconnectoin.jdbcDriver")
-    val username = config.getString("com.ddp.rest.mysqlconnectoin.username")
-    val password = config.getString("com.ddp.rest.mysqlconnectoin.password")
-    val url = config.getString("com.ddp.rest.mysqlconnectoin.url")
+    val driver = config.getString("com.ddp.mysqlconnection.jdbcDriver")
+    val username = config.getString("com.ddp.mysqlconnection.username")
+    val password = config.getString("com.ddp.mysqlconnection.password")
+    val url = config.getString("com.ddp.mysqlconnection.url")
 
     val connectionPool = new BasicDataSource()
 
