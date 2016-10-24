@@ -48,11 +48,9 @@ object MetaDataDB{
     try {
       val statement = Datasource.mysqlConnections.getConnection.prepareCall("call proc_connectionhierarchy(?)")
       statement.setString(1, message.conn)
-      val hasResult = statement.execute()
+      statement.execute()
       val resultSet = statement.getResultSet
-
-      if(hasResult)
-        streamFromResultSet(resultSet){ rs =>
+      streamFromResultSet(resultSet){ rs =>
           ConnectionHierarchy(message.conn, rs.getString("datasource_name"), rs.getString("dataentity_name"), rs.getString("datafield_name"), rs.getString("datatype"))
         }
     }

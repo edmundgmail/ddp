@@ -16,7 +16,7 @@ import spray.http.StatusCodes._
 import spray.httpx.Json4sSupport
 import spray.routing._
 import com.ddp.jarmanager.{JarParamter, ScalaSourceParameter}
-import com.ddp.jdbc.DataSourceConnection
+import com.ddp.jdbc.{ConnectionHierarchy, DataSourceConnection}
 import org.apache.spark.sql.{Dataset, Row}
 import spray.can.websocket.FrameCommandFailed
 import spray.can.websocket.frame.{BinaryFrame, TextFrame}
@@ -232,22 +232,25 @@ def getDataSources(conn:String)= {
   }
 }
 
-def getConnHierarchy(conn:String) = {
-  import spray.json.DefaultJsonProtocol
 
-  respondWithMediaType(`application/json`) {
-    complete {
-      val s = (worker ? new GetConnectionHierarchy(conn))
-      s
-    }
-  }
-}
-
-def getConnections = {
   import spray.json.DefaultJsonProtocol
   object MyJsonProtocol extends DefaultJsonProtocol {
     implicit val dataSourceConnectionFormat = jsonFormat1(DataSourceConnection)
+    implicit val connectionHierarchyFormat = jsonFormat5(ConnectionHierarchy)
   }
+
+
+  def getConnHierarchy(conn:String) = {
+   respondWithMediaType(`application/json`) {
+     complete {
+        val s = (worker ? new GetConnectionHierarchy(conn)).mapTo[Stream[ConnectionHierarchy]]
+        s
+     }
+   }
+}
+
+
+def getConnections = {
 
   respondWithMediaType(`application/json`) {
     complete {

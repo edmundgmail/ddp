@@ -135,7 +135,7 @@ class WorkerActor extends Actor with ActorLogging{
       }
 
       case message : GetConnectionHierarchy => {
-          sender!com.ddp.jdbc.MetaDataDB.getConnectionHierarchy(message)
+        sender ! com.ddp.jdbc.MetaDataDB.getConnectionHierarchy(message)
       }
 
       case message: GetDataSources => {

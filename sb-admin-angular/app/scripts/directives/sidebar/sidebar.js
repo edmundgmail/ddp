@@ -29,6 +29,7 @@ angular.module('sbAdminApp')
           alert("hello");
         });
      
+
         $scope.check = function(x){
           
           if(x==$scope.collapseVar)
