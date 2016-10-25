@@ -108,6 +108,10 @@ angular
         templateUrl:'views/pages/login.html',
         url:'/login'
     })
+    .state('websocket',{
+        templateUrl:'views/pages/websocket.html',
+        url:'/websocket'
+    })
       .state('dashboard.chart',{
         templateUrl:'views/chart.html',
         url:'/chart',
