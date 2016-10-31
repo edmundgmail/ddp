@@ -12,6 +12,9 @@ import com.typesafe.config.{Config, ConfigFactory}
 
 case class DataSourceConnection(name:String)
 case class ConnectionHierarchy(conn:String, datasource: String, dataentity:String, datafield:String, datatype:String)
+case class DataSourceHierarchy(datasource: String, dataentity:String, datafield:String, datatype:String)
+case class EntityHierarchy(dataentity:String, datafield:String, datatype:String)
+case class FieldHierarchy(datafield:String, datatype:String)
 
 object MetaDataDB{
 
@@ -50,9 +53,10 @@ object MetaDataDB{
       statement.setString(1, message.conn)
       statement.execute()
       val resultSet = statement.getResultSet
-      streamFromResultSet(resultSet){ rs =>
-          ConnectionHierarchy(message.conn, rs.getString("datasource_name"), rs.getString("dataentity_name"), rs.getString("datafield_name"), rs.getString("datatype"))
+      val records = streamFromResultSet(resultSet){ rs =>
+          DataSourceHierarchy(rs.getString("datasource_name"), rs.getString("dataentity_name"), rs.getString("datafield_name"), rs.getString("datatype"))
         }
+      records
     }
     catch
       {
