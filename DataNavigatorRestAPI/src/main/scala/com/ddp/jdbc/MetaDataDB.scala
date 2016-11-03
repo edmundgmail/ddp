@@ -12,10 +12,13 @@ import org.apache.calcite.rel.`type`.RelDataTypeField
   */
 
 case class DataSourceConnection(name:String)
-case class ConnectionHierarchy(conn:String, datasource: String, dataentity:String, datafield:String, datatype:String)
 case class DataSourceHierarchy(datasource: String, dataentity:String, datafield:String, datatype:String)
 case class EntityHierarchy(dataentity:String, datafield:String, datatype:String)
 case class FieldHierarchy(datafield:String, datatype:String)
+
+case class FieldDetail(datafield:String, datatype:String)
+case class DataEntityDetail(dataentity:String, datafields:Iterable[FieldDetail])
+case class DataSourceDetail (datasource: String, dataEntities:Iterable[DataEntityDetail])
 
 object MetaDataDB{
 
@@ -48,7 +51,7 @@ object MetaDataDB{
 
   }
 
-  def getConnectionHierarchy(message:GetConnectionHierarchy) : Map[String, Map[String, Stream[FieldHierarchy]]]= {
+  def getConnectionHierarchy(message:GetConnectionHierarchy) : Iterable[DataSourceDetail]= {
     try {
       val statement = Datasource.mysqlConnections.getConnection.prepareCall("call proc_connectionhierarchy(?)")
       statement.setString(1, message.conn)
@@ -57,7 +60,8 @@ object MetaDataDB{
       val records = streamFromResultSet(resultSet){ rs =>
           DataSourceHierarchy(rs.getString("datasource_name"), rs.getString("dataentity_name"), rs.getString("datafield_name"), rs.getString("datatype"))
         }
-      val s = records.groupBy(_.datasource).mapValues(_.groupBy(_.dataentity).mapValues(_.map(e=>new FieldHierarchy(e.datafield,e.datatype))))
+      //val s = records.groupBy(_.datasource).mapValues(_.groupBy(_.dataentity).mapValues(_.map(e=>new FieldHierarchy(e.datafield,e.datatype))))
+      val s = records.groupBy(_.datasource).map(e=>new DataSourceDetail(e._1,  e._2.groupBy(_.dataentity).map(e=>new DataEntityDetail(e._1, e._2.map(e=>new FieldDetail(e.datafield, e.datatype))))))
       s
     }
     catch

@@ -236,7 +236,6 @@ def getDataSources(conn:String)= {
   import spray.json.DefaultJsonProtocol
   object MyJsonProtocol extends DefaultJsonProtocol {
     implicit val dataSourceConnectionFormat = jsonFormat1(DataSourceConnection)
-    implicit val connectionHierarchyFormat = jsonFormat5(ConnectionHierarchy)
     implicit val fieldHierarchyFormat = jsonFormat2(FieldHierarchy)
   }
 
@@ -244,7 +243,7 @@ def getDataSources(conn:String)= {
   def getConnHierarchy(conn:String)  = {
     respondWithMediaType(`application/json`) {
       complete {
-        val s = (worker ? new GetConnectionHierarchy(conn)).mapTo[Map[String, Map[String, Stream[FieldHierarchy]]]]
+        val s = (worker ? new GetConnectionHierarchy(conn)).mapTo[Iterable[DataSourceDetail]]
         s
       }
     }
