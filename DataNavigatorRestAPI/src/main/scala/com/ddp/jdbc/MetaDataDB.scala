@@ -5,6 +5,7 @@ import java.sql.{Connection, DriverManager, ResultSet}
 import com.ddp.rest.GetConnectionHierarchy
 import com.ddp.rest.WorkerActor.Ok
 import com.typesafe.config.{Config, ConfigFactory}
+import org.apache.calcite.rel.`type`.RelDataTypeField
 
 /**
   * Created by cloudera on 10/9/16.
@@ -47,7 +48,7 @@ object MetaDataDB{
 
   }
 
-  def getConnectionHierarchy(message:GetConnectionHierarchy) : Any = {
+  def getConnectionHierarchy(message:GetConnectionHierarchy) : Map[String, Map[String, Stream[FieldHierarchy]]]= {
     try {
       val statement = Datasource.mysqlConnections.getConnection.prepareCall("call proc_connectionhierarchy(?)")
       statement.setString(1, message.conn)
@@ -56,7 +57,8 @@ object MetaDataDB{
       val records = streamFromResultSet(resultSet){ rs =>
           DataSourceHierarchy(rs.getString("datasource_name"), rs.getString("dataentity_name"), rs.getString("datafield_name"), rs.getString("datatype"))
         }
-      records
+      val s = records.groupBy(_.datasource).mapValues(_.groupBy(_.dataentity).mapValues(_.map(e=>new FieldHierarchy(e.datafield,e.datatype))))
+      s
     }
     catch
       {

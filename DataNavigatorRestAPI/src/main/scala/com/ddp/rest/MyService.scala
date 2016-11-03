@@ -16,7 +16,7 @@ import spray.http.StatusCodes._
 import spray.httpx.Json4sSupport
 import spray.routing._
 import com.ddp.jarmanager.{JarParamter, ScalaSourceParameter}
-import com.ddp.jdbc.{ConnectionHierarchy, DataSourceConnection, EntityHierarchy, FieldHierarchy}
+import com.ddp.jdbc._
 import org.apache.spark.sql.{Dataset, Row}
 import spray.can.websocket.FrameCommandFailed
 import spray.can.websocket.frame.{BinaryFrame, TextFrame}
@@ -94,15 +94,8 @@ trait MyService extends HttpService with CorsSupport{
       path("metadata" / "connHierarchy"){
         get{
           parameters ("conn") {
-
-            (worker ? new GetConnectionHierarchy(_)).onComplete{
-              case scala.util.Success(result : Stream[ConnectionHierarchy])=>
-                respondWithMediaType(`application/json`) {
-                  complete(result)
-                }
-              //case _=> complete("error")
-            })}
-
+            conn=> getConnHierarchy(conn)
+        }
         }
       } ~
       path("entity") {
@@ -244,23 +237,18 @@ def getDataSources(conn:String)= {
   object MyJsonProtocol extends DefaultJsonProtocol {
     implicit val dataSourceConnectionFormat = jsonFormat1(DataSourceConnection)
     implicit val connectionHierarchyFormat = jsonFormat5(ConnectionHierarchy)
+    implicit val fieldHierarchyFormat = jsonFormat2(FieldHierarchy)
   }
 
 
-  def getConnHierarchy(conn:String) = {
-        (worker ? new GetConnectionHierarchy(conn)).onComplete{
-          case scala.util.Success(result : Stream[ConnectionHierarchy])=>
-            respondWithMediaType(`application/json`) {
-              complete(result)
-            }
-          //case _=> complete("error")
-        }
-
-       //s.get.groupBy(_.datasource).mapValues(_.map(e=>EntityHierarchy(e.dataentity, e.datafield,e.datatype)).groupBy(_.dataentity).mapValues(_.map(e=>FieldHierarchy(e.datafield, e.datatype))))
-       // s
-
-}
-
+  def getConnHierarchy(conn:String)  = {
+    respondWithMediaType(`application/json`) {
+      complete {
+        val s = (worker ? new GetConnectionHierarchy(conn)).mapTo[Map[String, Map[String, Stream[FieldHierarchy]]]]
+        s
+      }
+    }
+  }
 
 def getConnections = {
 
