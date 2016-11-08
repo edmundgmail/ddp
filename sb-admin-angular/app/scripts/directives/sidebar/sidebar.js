@@ -19,9 +19,6 @@ angular.module('sbAdminApp')
         $scope.selectedMenu = 'dashboard';
         $scope.collapseVar = 0;
         $scope.multiCollapseVar = 0;
-        //$http.defaults.headers.common['Content-Type']= "application/json";
-        //$http.get('http://localhost:8080/greeting-javaconfig')
-        
         
         $http.get('http://localhost:8881/metadata/connections')
          .then(function(response) {

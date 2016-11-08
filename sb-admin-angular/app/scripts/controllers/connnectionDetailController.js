@@ -1,9 +1,19 @@
 angular.module('sbAdminApp')
 .controller('connectionDetailCtrl', ['$scope', '$stateParams', '$http',function($scope, $stateParams,$http){
         $scope.connectionName=$stateParams.connectionName;
-        $scope.connectionHierarchies=[{"conn":"my-spark-app","datasource":"cif","dataentity":"transaction","datafield":"name","datatype":"string"}];
+        $scope.connectionHierarchies=[];
+        $scope.selectedDataEntities=[];
+        $http.get('http://localhost:8881/metadata/connHierarchy?conn='+$scope.connectionName)
+         .then(function(response) {
+          $scope.connectionHierarchies = response.data;
 
-        //$scope.dataSources =  $http.get('http://localhost:8881/metadata/connHierarchy?conn='+$scope.connectionName);
-        //alert($scope.dataSources);
-        //$scope.dataSources=[{"conn":"my-spark-app","datasource":"cif","dataentity":"transaction","datafield":"name","datatype":"string"}];
+        });
+
+$scope.getSelectedDataEntities=function(){
+        if($scope.selectedDataSource !=null){
+         	var key = $scope.connectionHierarchies.indexOf($scope.selectedDataSource);
+         	$scope.selectedDataEntities = $scope.connectionHierarchies[key].dataEntities;         	
+         }	
+}
+
 }]);
