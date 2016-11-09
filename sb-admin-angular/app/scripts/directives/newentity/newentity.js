@@ -14,9 +14,9 @@ angular.module('sbAdminApp')
         replace: true,
         scope: {
         	'selectedDataSource':'@',
-      	},
-      	controller:function($scope){
-        	alert($scope.selectedDataSource);
-      	}
+      	}//,
+      	//controller:function($scope){
+        	//alert($scope.selectedDataSource);
+      	//}
     	}
 	});
