@@ -57,7 +57,7 @@ object MetaDataDB{
       statement.setString(1, message.conn)
       statement.execute()
       val resultSet = statement.getResultSet
-      val records = streamFromResultSet(resultSet){ rs =>
+      val records =streamFromResultSet(resultSet){ rs =>
           DataSourceHierarchy(rs.getString("datasource_name"), rs.getString("dataentity_name"), rs.getString("datafield_name"), rs.getString("datatype"))
         }
       //val s = records.groupBy(_.datasource).mapValues(_.groupBy(_.dataentity).mapValues(_.map(e=>new FieldHierarchy(e.datafield,e.datatype))))

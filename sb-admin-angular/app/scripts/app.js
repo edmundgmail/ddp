@@ -170,7 +170,8 @@ angular
             return $ocLazyLoad.load({
               name:'sbAdminApp',
               files:[
-              'scripts/controllers/connnectionDetailController.js'
+              'scripts/controllers/connnectionDetailController.js',
+              'scripts/directives/newentity/newentity.js'
               ]
             })
           }

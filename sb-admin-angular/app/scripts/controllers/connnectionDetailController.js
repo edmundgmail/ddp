@@ -7,6 +7,15 @@ angular.module('sbAdminApp')
          .then(function(response) {
           $scope.connectionHierarchies = response.data;
 
+          var newEntity = {"dataentity":"New Entity","datafields":[]};
+          angular.forEach($scope.connectionHierarchies, function(s){
+            s.dataEntities.push(newEntity);
+          })
+
+          var newSource = {"datasource" : "New Source", "dataEntities":[]};
+          $scope.connectionHierarchies.push(newSource);
+
+
         });
 
 $scope.getSelectedDataEntities=function(){
