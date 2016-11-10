@@ -12,7 +12,7 @@
             <label>Select Data Source:</label> 
             <select ng-model="selectedDataSource"  class="form-control" ng-options="x.datasource for x in connectionHierarchies" ng-change="getSelectedDataEntities()">
             </select>
-            
+             
             </div>
 
             <div class="form-group">
@@ -20,22 +20,23 @@
             <select ng-model="selectedDataEntity"  class="form-control" ng-options="x.dataentity for x in selectedDataEntities">
             </select>
             </div>   
+            
+            <div class="animate-switch-container"
+              ng-switch on="selectedDataSource.datasource">
+                <div class="animate-switch" ng-switch-when="undefined"> </div>      
+                <div class="animate-switch" ng-switch-when="New Source">new source</div>
+                <div class="animate-switch" ng-switch-default>
+                <div class="animate-switch-container" ng-switch on="selectedDataEntity.dataentity">
+                  <div class="animate-switch" ng-switch-when="New Entity"> <div newentity datasource={{selectedDataSource.datasource}}> </div></div>  
+                  <div class="animate-switch" ng-switch-default> show entity</div>  
+                </div>
+                </div>
+
+            </div>
 
 
         </div>
     </div>
 
 
-  <div class="animate-switch-container"
-    ng-switch on="selectedDataSource.datasource">
-      <div class="animate-switch" ng-switch-when="undefined"> </div>      
-      <div class="animate-switch" ng-switch-when="New Source">new source</div>
-      <div class="animate-switch" ng-switch-default>
-      <div class="animate-switch-container" ng-switch on="selectedDataEntity.dataentity">
-        <div class="animate-switch" ng-switch-when="New Entity"> <newentity selectedDataSource={{selectedDataSource}}></newentity></div>  
-        <div class="animate-switch" ng-switch-default> show entity</div>  
-      </div>
-      </div>
-
-</div>
 </div>

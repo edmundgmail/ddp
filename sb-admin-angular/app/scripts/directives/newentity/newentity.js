@@ -10,13 +10,21 @@ angular.module('sbAdminApp')
 	.directive('newentity',function(){
 		return {
         templateUrl:'scripts/directives/newentity/newentity.html',
-        restrict: 'E',
-        replace: true,
         scope: {
-        	'selectedDataSource':'@',
-      	}//,
-      	//controller:function($scope){
-        	//alert($scope.selectedDataSource);
-      	//}
+        	'datasource':'@datasource'
+      	}
     	}
 	});
+  
+angular.module('sbAdminApp')
+  .directive('cpybooknewentity', function(){
+      return {
+        templateUrl:'scripts/directives/newentity/cpybooknewentity.html',
+      }
+  });
+
+angular.module('sbAdminApp')
+.controller('newEntityCtrl', ['$scope', '$stateParams', '$http',function($scope, $stateParams,$http){
+        $scope.FileTypes=['cpybook', 'csv', 'xml'];
+
+}]);
