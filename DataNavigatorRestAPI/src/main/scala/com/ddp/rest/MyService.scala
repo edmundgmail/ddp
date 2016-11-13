@@ -23,6 +23,16 @@ import spray.can.websocket.frame.{BinaryFrame, TextFrame}
 
 import scala.concurrent.ExecutionContext
 import scala.concurrent.duration._
+import akka.actor.{Actor, Props}
+import spray.http._
+import spray.http.MediaTypes._
+import spray.routing._
+import spray.http.BodyPart
+import java.io.{ByteArrayInputStream, InputStream, OutputStream}
+
+import spray.httpx.unmarshalling.Unmarshaller
+import spray.json.DefaultJsonProtocol
+
 
 /* Used to mix in Spray's Marshalling Support with json4s */
 object Json4sProtocol extends Json4sSupport {
@@ -30,10 +40,9 @@ object Json4sProtocol extends Json4sSupport {
 }
 
 
-
 // we don't implement our route structure directly in the service actor because
 // we want to be able to test it independently, without having to spin up an actor
-class MyServiceActor extends Actor with MyService  {
+class MyServiceActor extends Actor with MyService with FileUploadService {
 
 
 
@@ -57,12 +66,12 @@ class MyServiceActor extends Actor with MyService  {
       println("pushing to all children : " + msg)
       children.foreach(ref => ref ! Push(msg))
 */
-    runRoute(myRoute ~ staticRoute)
+    runRoute(myRoute ~ cors(fileUploadRoute))
   }
 
-  def staticRoute: Route =
-    path("")(getFromResource("app/index.html")) ~ getFromResourceDirectory("app") ~
-    path("web")(getFromResource("webapp/index.html")) ~ getFromResourceDirectory("webapp")
+ // def staticRoute: Route =
+ //   path("")(getFromResource("app/index.html")) ~ getFromResourceDirectory("app") ~
+ //    path("web")(getFromResource("webapp/index.html")) ~ getFromResourceDirectory("webapp")
 
 }
 
@@ -144,8 +153,8 @@ trait MyService extends HttpService with CorsSupport{
                 doScalaSource(someObject)
               }
             }
-         }
-        } ~
+        }
+     }~
     pathPrefix("css") { get { getFromResourceDirectory("app") } }~
         path("spray-html") {
           get {
@@ -161,6 +170,7 @@ trait MyService extends HttpService with CorsSupport{
           }
         }
   }
+
 
   import WorkerActor._
   //implicit val sendReceiveTimeout = akka.util.Timeout(4.minutes)
