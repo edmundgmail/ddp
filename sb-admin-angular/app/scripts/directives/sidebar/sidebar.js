@@ -23,7 +23,6 @@ angular.module('sbAdminApp')
         $http.get('http://localhost:8881/metadata/connections')
          .then(function(response) {
           $scope.connections = response.data;
-          alert("hello");
         });
      
 

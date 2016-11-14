@@ -155,7 +155,6 @@ trait MyService extends HttpService with CorsSupport{
             }
         }
      }~
-    pathPrefix("css") { get { getFromResourceDirectory("app") } }~
         path("spray-html") {
           get {
             respondWithMediaType(`text/html`) {

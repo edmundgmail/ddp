@@ -26,7 +26,13 @@ trait FileUploadService extends Directives{
                 case BodyPart(entity, headers) =>
                   //val content = entity.buffer
                   val content = new ByteArrayInputStream(entity.data.toByteArray)
-                  val fileName = headers.find(h => h.is("content-disposition")).get.value.split("filename=").last
+                  val h = headers.find(h => h.is("content-disposition"))
+                  val fileName=h.get.value.split("filename=").last
+                  val filetype=h.get.value.split("name=").last
+
+                  filetype match{
+                    case "copybook" =>
+                  }
                   val result = saveAttachment("/tmp/"+fileName, content)
                   (fileName, result)
                 case _ =>
@@ -64,8 +70,7 @@ trait FileUploadService extends Directives{
       fos.close()
       true
     } catch {
-      case _ => Throwable
-        false
+      case _ =>false
     }
   }
 
