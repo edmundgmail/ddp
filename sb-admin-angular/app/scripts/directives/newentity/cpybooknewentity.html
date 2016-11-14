@@ -2,13 +2,13 @@
 <div class="row" ng-app="sbAdminApp" ng-controller="newEntityCtrl">
     <div class="form-group">
         <label>Select Copybook file</label> 
-        <p> <input id="files-upload-cpybook" type="file"> </p>
+        <p> <input id="files-upload-cpybook" type="file" file-model="cpybookfile"> </p>
 
 
     </div>
     <div class="form-group">
         <label>Select Copybook Sample data file</label> 
-        <p> <input id="files-upload-cpybook-datafile" type="file" multiple> </p>
+        <p> <input id="files-upload-cpybook-datafile" type="file" multiple file-model="cpybookdatafile">  </p>
     </div>
 
     <div class="form-group">

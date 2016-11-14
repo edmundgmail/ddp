@@ -36,6 +36,19 @@ angular.module('sbAdminApp')
             alert($scope.selectCopybookFileStructure.name);
             alert($scope.selectCopybookBinaryFormat.name);
             alert($scope.selectCopybookFont);
+            var formdata = new FormData();
+            formdata.append('copybook', $scope.cpybookfile);
+
+            $http.post('http://192.168.56.101:8881/file', formdata, {
+                  withCredentials: false,
+                  transformRequest: angular.identity,
+                  headers: {'Content-Type': undefined}}).success(function(){
+              alert('success');
+            }).error(function(){
+              alert('error');
+            });
+            //"{ \"cpyBookName\": \"RPWACT\", \"cpyBookHdfsPath\": \"/user/root/LRPWSACT.cpy\", \"fileStructure\":\"FixedLength\", \"binaryFormat\": \"FMT_MAINFRAME\", \"splitOptoin\": \"SplitNone\", \"dataFileHdfsPath\":\"/user/root/RPWACT.FIXED.END\", \"cpybookFont\":\"cp037\" }"
+            
         };
 
 }]);

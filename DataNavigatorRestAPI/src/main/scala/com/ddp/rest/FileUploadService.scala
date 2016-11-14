@@ -29,12 +29,12 @@ trait FileUploadService extends Directives{
                   val h = headers.find(h => h.is("content-disposition"))
                   val fileName=h.get.value.split("filename=").last
                   val filetype=h.get.value.split("name=").last
-
+                  System.out.println("filetype=" + filetype)
+                  System.out.println("fileName=" + fileName)
                   filetype match{
-                    case "copybook" =>
+                    case "copybook" => System.out.println("this is copybook ")
                   }
                   val result = saveAttachment("/tmp/"+fileName, content)
-                  (fileName, result)
                 case _ =>
               }
               s"""{"status": "Processed POST request, details=$details" }"""

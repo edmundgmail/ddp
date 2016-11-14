@@ -3,7 +3,7 @@ angular.module('sbAdminApp')
         $scope.connectionName=$stateParams.connectionName;
         $scope.connectionHierarchies=[];
         $scope.selectedDataEntities=[];
-        $http.get('http://localhost:8881/metadata/connHierarchy?conn='+$scope.connectionName)
+        $http.get('http://192.168.56.101:8881/metadata/connHierarchy?conn='+$scope.connectionName)
          .then(function(response) {
           $scope.connectionHierarchies = response.data;
 
