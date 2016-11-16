@@ -15,12 +15,12 @@ angular.module('sbAdminApp')
       replace: true,
       scope: {
       },
-      controller:function($scope,$http){
+      controller:function($scope,$rootScope,$http){
         $scope.selectedMenu = 'dashboard';
         $scope.collapseVar = 0;
         $scope.multiCollapseVar = 0;
         
-        $http.get('http://192.168.56.101:8881/metadata/connections')
+        $http.get($rootScope.url+'/metadata/connections')
          .then(function(response) {
           $scope.connections = response.data;
         });

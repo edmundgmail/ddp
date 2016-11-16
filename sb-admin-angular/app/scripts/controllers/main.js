@@ -7,5 +7,6 @@
  * Controller of the sbAdminApp
  */
 angular.module('sbAdminApp')
-  .controller('MainCtrl', function($scope,$position) {
+  .controller('MainCtrl', function($scope,$rootScope, $position) {
+  	$rootScope.url='http://192.168.1.174:8881';
   });

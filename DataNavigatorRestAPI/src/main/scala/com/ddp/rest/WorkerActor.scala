@@ -22,7 +22,7 @@ import spray.can.websocket.frame.{BinaryFrame, TextFrame}
 import scala.concurrent.{Await, ExecutionContext, Future}
 import scala.io.Source
 import scala.util.Success
-
+import com.ddp.utils.Utils
 
 
 case class WorkerInitialize(hello : String)
@@ -88,6 +88,7 @@ class WorkerActor extends Actor with ActorLogging{
   //actorRefFactory.system.scheduler.scheduleOnce(5 second, self, WorkerInitialize("hello"))
   private var initailized = 0
 
+
   def workerInitialize() = {
       val wss = actorRefFactory.actorSelection("/user/wssserver1")
 
@@ -150,8 +151,9 @@ class WorkerActor extends Actor with ActorLogging{
 import ExecutionContext.Implicits.global
 
 case class Query(sqlContext:SQLContext, param : QueryParameter){
+
   def query : Any = {
-    val path = "/tmp/" + System.currentTimeMillis + "_" + util.Random.nextInt(10000) + ".tmp"
+    val path = Utils.getTempPath()
 
 
     Future{

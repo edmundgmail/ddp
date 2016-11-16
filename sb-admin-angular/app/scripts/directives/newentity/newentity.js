@@ -24,31 +24,62 @@ angular.module('sbAdminApp')
   });
 
 angular.module('sbAdminApp')
-.controller('newEntityCtrl', ['$scope', '$stateParams', '$http',function($scope, $stateParams,$http){
+.controller('newEntityCtrl', ['$scope','$rootScope', '$stateParams', '$http',function($scope, $rootScope, $stateParams,$http){
         $scope.FileTypes=['cpybook', 'csv', 'xml'];
         $scope.CopybookSplitLevels = [ {'id': 0,'name':'No Split'}, {'id': 1, 'name':'On Redefine'}, {'id': 2,'name':'On 01 Level'},{'id': 3,'name':'On Highest Repeating'}];
         $scope.CopybookFileStructure = [{'id': 2, 'name':'Fixed Length'}];
         $scope.CopybookBnaryFormat = [{'id': 1, 'name':'Mainframe'}];
         $scope.CopybookFont = ['cp037'];
 
-        $scope.PreviewCopybookFile=function(){
-            alert($scope.selectCopybookSplitLevel.name);
-            alert($scope.selectCopybookFileStructure.name);
-            alert($scope.selectCopybookBinaryFormat.name);
-            alert($scope.selectCopybookFont);
+        $scope.UploadCopybookFile=function(element){
+            //alert($scope.selectCopybookSplitLevel.name);
+            //alert($scope.selectCopybookFileStructure.name);
+            //alert($scope.selectCopybookBinaryFormat.name);
+            //alert($scope.selectCopybookFont);
             var formdata = new FormData();
-            formdata.append('copybook', $scope.cpybookfile);
-
-            $http.post('http://192.168.56.101:8881/file', formdata, {
+            formdata.append(element.files[0].name, $scope.cpybookfile);
+            $http.post($rootScope.url+'/file', formdata, {
                   withCredentials: false,
                   transformRequest: angular.identity,
-                  headers: {'Content-Type': undefined}}).success(function(){
-              alert('success');
+                  headers: {'Content-Type': undefined}}).success(function(response){
+                  $scope.copybookfileUploadPath = response.uploadPath + "/" + element.files[0].name;
+                  alert('filename=' + $scope.copybookfileUploadPath);
             }).error(function(){
               alert('error');
             });
-            //"{ \"cpyBookName\": \"RPWACT\", \"cpyBookHdfsPath\": \"/user/root/LRPWSACT.cpy\", \"fileStructure\":\"FixedLength\", \"binaryFormat\": \"FMT_MAINFRAME\", \"splitOptoin\": \"SplitNone\", \"dataFileHdfsPath\":\"/user/root/RPWACT.FIXED.END\", \"cpybookFont\":\"cp037\" }"
+          };
+
+         $scope.UploadCopybookDataFiles=function(element){
+            //alert($scope.selectCopybookSplitLevel.name);
+            //alert($scope.selectCopybookFileStructure.name);
+            //alert($scope.selectCopybookBinaryFormat.name);
+            //alert($scope.selectCopybookFont);
+            var formdata = new FormData();
             
+            for( var i=0;  i<element.files.length; i++){
+              formdata.append(element.files[i].name, $scope.cpybookdatafiles.get(i));  
+            }
+            
+            $http.post($rootScope.url+'/file', formdata, {
+                  withCredentials: false,
+                  transformRequest: angular.identity,
+                  headers: {'Content-Type': undefined}}).success(function(response){
+                  $scope.cpybookdatafilesUploadPath = response.uploadPath;
+                  $scope.cpybookdatafileUploadFiles=element.files;
+                  alert('path=' + $scope.cpybookdatafilesUploadPath);
+            }).error(function(){
+              alert('error');            
+             });
         };
+
+        $scope.PreviewCopybookFile = function(){
+          if(!$scope.selectCopybookFont 
+            || !$scope.selectCopybookBinaryFormat 
+            || !$scope.selectCopybookFileStructure 
+            || !$scope.selectCopybookSplitLevel 
+            || !$scope.cpybookdatafilesUploadPath 
+            || !$scope.copybookfileUploadPath )
+              alert('Please input all the fields');
+          };
 
 }]);
