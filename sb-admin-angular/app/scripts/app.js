@@ -171,6 +171,7 @@ angular
               name:'sbAdminApp',
               files:[
               'scripts/controllers/connnectionDetailController.js',
+              'scripts/directives/hdfsfileuploader/hdfsfileuploader.js',
               'scripts/directives/newentity/newentity.js'
               ]
             })

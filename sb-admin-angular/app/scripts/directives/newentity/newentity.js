@@ -32,12 +32,8 @@ angular.module('sbAdminApp')
         $scope.CopybookFont = ['cp037'];
 
         $scope.UploadCopybookFile=function(element){
-            //alert($scope.selectCopybookSplitLevel.name);
-            //alert($scope.selectCopybookFileStructure.name);
-            //alert($scope.selectCopybookBinaryFormat.name);
-            //alert($scope.selectCopybookFont);
             var formdata = new FormData();
-            formdata.append(element.files[0].name, $scope.cpybookfile);
+            formdata.append(element.files[0].name, element.files[0]);
             $http.post($rootScope.url+'/file', formdata, {
                   withCredentials: false,
                   transformRequest: angular.identity,
@@ -57,7 +53,7 @@ angular.module('sbAdminApp')
             var formdata = new FormData();
             
             for( var i=0;  i<element.files.length; i++){
-              formdata.append(element.files[i].name, $scope.cpybookdatafiles.get(i));  
+              formdata.append(element.files[i].name, element.files[i]);  
             }
             
             $http.post($rootScope.url+'/file', formdata, {
@@ -65,8 +61,10 @@ angular.module('sbAdminApp')
                   transformRequest: angular.identity,
                   headers: {'Content-Type': undefined}}).success(function(response){
                   $scope.cpybookdatafilesUploadPath = response.uploadPath;
-                  $scope.cpybookdatafileUploadFiles=element.files;
+                  $scope.cpybookdatafileUploadFileNames=[];
+                  angular.forEach(element.files, function(item){$scope.cpybookdatafileUploadFileNames.push(item.name);});
                   alert('path=' + $scope.cpybookdatafilesUploadPath);
+                  angular.foreach($scope.cpybookdatafileUploadFileNames, function(item){alert('filename=' + item);});
             }).error(function(){
               alert('error');            
              });

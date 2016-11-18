@@ -7,9 +7,14 @@
         <p> <input id="files-upload-cpybook" type="file" file-model="cpybookfile" onchange="angular.element(this).scope().UploadCopybookFile(this)"> </p>
     </div>
     <div class="form-group">
-        <label>Select Copybook Sample data file</label> 
-        <p> <input id="files-upload-cpybook-datafile" type="file" multiple file-model="cpybookdatafiles" onchange="angular.element(this).scope().UploadCopybookDataFiles(this)">  </p>
+        <label>Select Copybook Sample data files</label> 
+        <p> <input id="files-upload-cpybook-datafile" type="file" multiple onchange="angular.element(this).scope().UploadCopybookDataFiles(this)">  </p>
     </div>
+  <div class="form-group">
+        <label>Test Select Copybook Sample data files</label> 
+        <div hdfsfileuploader multiple="true"> </div>
+    </div>
+    
 
     <div class="form-group">
         <label>Select Copybook Split Option</label> 
