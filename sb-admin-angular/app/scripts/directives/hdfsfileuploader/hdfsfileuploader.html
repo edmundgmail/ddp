@@ -1,0 +1,6 @@
+<div ng-switch on="{{multiple}}">
+    <div ng-switch-when='true'><input type="file" multiple onchange="angular.element(this).scope().upload(this)">
+</div>
+    <div ng-switch-default> <input type="file" onchange="angular.element(this).scope().upload(this)">
+</div>
+</div>
