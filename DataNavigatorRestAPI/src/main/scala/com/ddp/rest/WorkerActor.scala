@@ -28,6 +28,7 @@ import com.ddp.utils.Utils
 case class WorkerInitialize(hello : String)
 
 case class CopybookIngestionParameter(
+                               conn:String,
                                cpyBookName : String,
                                cpyBookHdfsPath : String,
                                dataFileHdfsPath: String = "",
@@ -37,9 +38,9 @@ case class CopybookIngestionParameter(
                                splitOptoin: String = "SplitNone"
                              )
 
-case class QueryParameter(sql:String)
+case class QueryParameter(conn:String, sql:String)
 
-case class UserClassParameter (userClassName: String)
+case class UserClassParameter (conn:String, userClassName: String)
 case class GetConnections()
 
 case class GetDataSources(conn:String)
@@ -55,8 +56,8 @@ object WorkerActor {
   //hadoopConfig.set("fs.defaultFS", config.getString("com.ddp.rest.defaultFS"))
 
   val sparkSession = org.apache.spark.sql.SparkSession.builder
-    .master("spark://t440:7077")
-      //.master("local[2]")
+    //.master("spark://t440:7077")
+      .master("local[2]")
     .appName("my-spark-app")
     .config("spark.ui.port", "44040")
       .enableHiveSupport()
@@ -109,7 +110,7 @@ class WorkerActor extends Actor with ActorLogging{
       case message : CopybookIngestionParameter => {
         workerInitialize()
 
-        sender ! CopybookIngestion(config, sparkSession, message).run()
+        sender ! CopybookIngestion(config, sparkSessionMap(message.conn), message).run()
       }
 
       case loadjars : JarParamter => {

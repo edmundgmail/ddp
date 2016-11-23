@@ -1,40 +1,35 @@
 <div class="panel-body">
 <div class="row" ng-app="sbAdminApp" ng-controller="newEntityCtrl">
 
-<form novalidate ng-submit="PreviewCopybookFile()" name="previewForm">
-    <div class="form-group">
+<form ng-submit="PreviewCopybookFile()" name="previewForm">
+  <div class="form-group">
         <label>Select Copybook file</label> 
-        <p> <input id="files-upload-cpybook" type="file" file-model="cpybookfile" onchange="angular.element(this).scope().UploadCopybookFile(this)"> </p>
+        <div hdfsfileuploader uploadedpath="uploadedCopybookPath" uploadedfiles="uploadedCopybookFiles" required> </div>
     </div>
     <div class="form-group">
         <label>Select Copybook Sample data files</label> 
-        <p> <input id="files-upload-cpybook-datafile" type="file" multiple onchange="angular.element(this).scope().UploadCopybookDataFiles(this)">  </p>
+        <div hdfsfileuploader multiple="true" uploadedpath="uploadedCopybookDataPath" uploadedfiles="uploadedCopybookDataFiles" required> </div>
     </div>
-  <div class="form-group">
-        <label>Test Select Copybook Sample data files</label> 
-        <div hdfsfileuploader> </div>
-    </div>
-    
 
     <div class="form-group">
         <label>Select Copybook Split Option</label> 
-       <select ng-model="selectCopybookSplitLevel"  class="form-control" ng-options="x.name for x in CopybookSplitLevels"> </select>
+       <select ng-model="selectCopybookSplitLevel"  class="form-control" ng-options="x.name for x in CopybookSplitLevels" required> </select>
     </div>
 
     <div class="form-group">
         <label>Select Copybook File Structure</label> 
-       <select ng-model="selectCopybookFileStructure"  class="form-control" ng-options="x.name for x in CopybookFileStructure"></select>
+       <select ng-model="selectCopybookFileStructure"  class="form-control" ng-options="x.name for x in CopybookFileStructure" required></select>
     </div>
 
     <div class="form-group">
         <label>Select Copybook Binary Format</label> 
-       <select ng-model="selectCopybookBinaryFormat"  class="form-control" ng-options="x.name for x in CopybookBnaryFormat"></select>
+       <select ng-model="selectCopybookBinaryFormat"  class="form-control" ng-options="x.name for x in CopybookBnaryFormat" required></select>
     </div>
     <div class="form-group">
         <label>Select Copybook Font</label> 
-       <select ng-model="selectCopybookFont"  class="form-control" ng-options="x for x in CopybookFont"></select>
+       <select ng-model="selectCopybookFont"  class="form-control" ng-options="x for x in CopybookFont" required></select>
     </div>
- <input type="submit" class="btn btn-primary">Previw</button>
+    <button class="btn btn-primary" ng-disabled="previewForm.$invalid">Preview</button>
 </form>
 </div>
 

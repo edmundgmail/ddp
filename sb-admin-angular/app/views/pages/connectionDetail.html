@@ -27,7 +27,7 @@
                 <div class="animate-switch" ng-switch-when="New Source">new source</div>
                 <div class="animate-switch" ng-switch-default>
                 <div class="animate-switch-container" ng-switch on="selectedDataEntity.dataentity">
-                  <div class="animate-switch" ng-switch-when="New Entity"> <div newentity datasource={{selectedDataSource.datasource}}> </div></div>  
+                  <div class="animate-switch" ng-switch-when="New Entity"> <div newentity connectionName={{connectionName}} datasource={{selectedDataSource.datasource}}> </div></div>  
                   <div class="animate-switch" ng-switch-default> show entity</div>  
                 </div>
                 </div>

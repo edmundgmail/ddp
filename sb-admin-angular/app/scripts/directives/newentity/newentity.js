@@ -12,6 +12,7 @@ angular.module('sbAdminApp')
         templateUrl:'scripts/directives/newentity/newentity.html',
         scope: {
         	'datasource':'@datasource'
+          'connectionName':'@'
       	}
     	}
 	});
@@ -31,53 +32,38 @@ angular.module('sbAdminApp')
         $scope.CopybookBnaryFormat = [{'id': 1, 'name':'Mainframe'}];
         $scope.CopybookFont = ['cp037'];
 
-        $scope.UploadCopybookFile=function(element){
-            var formdata = new FormData();
-            formdata.append(element.files[0].name, element.files[0]);
-            $http.post($rootScope.url+'/file', formdata, {
-                  withCredentials: false,
-                  transformRequest: angular.identity,
-                  headers: {'Content-Type': undefined}}).success(function(response){
-                  $scope.copybookfileUploadPath = response.uploadPath + "/" + element.files[0].name;
-                  alert('filename=' + $scope.copybookfileUploadPath);
-            }).error(function(){
-              alert('error');
-            });
-          };
-
-         $scope.UploadCopybookDataFiles=function(element){
-            //alert($scope.selectCopybookSplitLevel.name);
-            //alert($scope.selectCopybookFileStructure.name);
-            //alert($scope.selectCopybookBinaryFormat.name);
-            //alert($scope.selectCopybookFont);
-            var formdata = new FormData();
-            
-            for( var i=0;  i<element.files.length; i++){
-              formdata.append(element.files[i].name, element.files[i]);  
-            }
-            
-            $http.post($rootScope.url+'/file', formdata, {
-                  withCredentials: false,
-                  transformRequest: angular.identity,
-                  headers: {'Content-Type': undefined}}).success(function(response){
-                  $scope.cpybookdatafilesUploadPath = response.uploadPath;
-                  $scope.cpybookdatafileUploadFileNames=[];
-                  angular.forEach(element.files, function(item){$scope.cpybookdatafileUploadFileNames.push(item.name);});
-                  alert('path=' + $scope.cpybookdatafilesUploadPath);
-                  angular.foreach($scope.cpybookdatafileUploadFileNames, function(item){alert('filename=' + item);});
-            }).error(function(){
-              alert('error');            
-             });
-        };
+        $scope.uploadedCopybookFiles=[];
+        $scope.uploadedCopybookPath=null;
+        $scope.uploadedCopybookDataPath=null;
+        $scope.uploadedCopybookDataFiles=[];
+        $scope.selectCopybookSplitLevel=null;
+        $scope.selectCopybookFileStructure=null;
+        $scope.selectCopybookBinaryFormat=null;
+        $scope.selectCopybookFont=null;
 
         $scope.PreviewCopybookFile = function(){
-          if(!$scope.selectCopybookFont 
-            || !$scope.selectCopybookBinaryFormat 
-            || !$scope.selectCopybookFileStructure 
-            || !$scope.selectCopybookSplitLevel 
-            || !$scope.cpybookdatafilesUploadPath 
-            || !$scope.copybookfileUploadPath )
               alert('Please input all the fields');
+
+              var formData = {
+                               'conn' : $scope.connectionName,
+                               'cpyBookName' : $scope.uploadedCopybookFiles[0],
+                               'cpyBookHdfsPath' : $scope.uploadedCopybookPath+'/'+ $scope.uploadedCopybookFiles[0],
+                               'dataFileHdfsPath': $scope.uploadedCopybookDataPath+$scope.uploadedCopybookDataFiles[0],
+                               'cpybookFont': $scope.selectCopybookFont,
+                               'fileStructure': $scope.selectCopybookFileStructure,
+                               'binaryFormat': $scope.selectCopybookBinaryFormat,
+                               'splitOptoin': $scope.selectCopybookFont
+                  };   
+                $http.post($rootScope.url+'/entity', formdata, {
+                  withCredentials: false,
+                  transformRequest: angular.identity,
+                  headers: {'Content-Type': 'application/json'}})
+              .success(function(response){
+                 alert('success');
+                }).error(function(){
+                  alert('error');            
+                });
+
           };
 
 }]);
