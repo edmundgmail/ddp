@@ -42,7 +42,7 @@ object Json4sProtocol extends Json4sSupport {
 
 // we don't implement our route structure directly in the service actor because
 // we want to be able to test it independently, without having to spin up an actor
-class MyServiceActor extends Actor with MyService with FileUploadService {
+class MyServiceActor extends Actor with MyService with FileUploadService with CopybookSchemaRegisterService {
 
 
 
@@ -66,7 +66,7 @@ class MyServiceActor extends Actor with MyService with FileUploadService {
       println("pushing to all children : " + msg)
       children.foreach(ref => ref ! Push(msg))
 */
-    runRoute(myRoute ~ cors(fileUploadRoute))
+    runRoute(myRoute ~ cors(fileUploadRoute)) ~ cors(copybookSchemaRegisterRoute))
   }
 
  // def staticRoute: Route =

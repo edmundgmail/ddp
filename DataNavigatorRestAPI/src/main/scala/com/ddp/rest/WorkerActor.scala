@@ -38,6 +38,15 @@ case class CopybookIngestionParameter(
                                splitOptoin: String = "SplitNone"
                              )
 
+case class CopybookSchemaRegisterParameter(
+                                       cpyBookName : String,
+                                       cpyBookHdfsPath : String,
+                                       cpybookFont: String = "cp037",
+                                       fileStructure: String = "FixedLength",
+                                       binaryFormat: String = "FMT_MAINFRAME",
+                                       splitOptoin: String = "SplitNone"
+                                     )
+
 case class QueryParameter(conn:String, sql:String)
 
 case class UserClassParameter (conn:String, userClassName: String)
@@ -108,10 +117,9 @@ class WorkerActor extends Actor with ActorLogging{
       }
 
       case message : CopybookIngestionParameter => {
-        workerInitialize()
-
         sender ! CopybookIngestion(config, sparkSessionMap(message.conn), message).run()
       }
+
 
       case loadjars : JarParamter => {
         workerInitialize()
