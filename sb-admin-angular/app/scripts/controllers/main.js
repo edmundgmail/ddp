@@ -8,5 +8,5 @@
  */
 angular.module('sbAdminApp')
   .controller('MainCtrl', function($scope,$rootScope, $position) {
-  	$rootScope.url='http://192.168.56.101:8881';
+  	$rootScope.url='http://192.168.1.174:8881';
   });

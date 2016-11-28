@@ -38,14 +38,7 @@ case class CopybookIngestionParameter(
                                splitOptoin: String = "SplitNone"
                              )
 
-case class CopybookSchemaRegisterParameter(
-                                       cpyBookName : String,
-                                       cpyBookHdfsPath : String,
-                                       cpybookFont: String = "cp037",
-                                       fileStructure: String = "FixedLength",
-                                       binaryFormat: String = "FMT_MAINFRAME",
-                                       splitOptoin: String = "SplitNone"
-                                     )
+
 
 case class QueryParameter(conn:String, sql:String)
 

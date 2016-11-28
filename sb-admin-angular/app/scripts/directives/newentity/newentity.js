@@ -11,7 +11,7 @@ angular.module('sbAdminApp')
 		return {
         templateUrl:'scripts/directives/newentity/newentity.html',
         scope: {
-        	'datasource':'@datasource'
+        	'datasource':'@datasource',
           'connectionName':'@'
       	}
     	}
@@ -27,37 +27,44 @@ angular.module('sbAdminApp')
 angular.module('sbAdminApp')
 .controller('newEntityCtrl', ['$scope','$rootScope', '$stateParams', '$http',function($scope, $rootScope, $stateParams,$http){
         $scope.FileTypes=['cpybook', 'csv', 'xml'];
-        $scope.CopybookSplitLevels = [ {'id': 0,'name':'No Split'}, {'id': 1, 'name':'On Redefine'}, {'id': 2,'name':'On 01 Level'},{'id': 3,'name':'On Highest Repeating'}];
-        $scope.CopybookFileStructure = [{'id': 2, 'name':'Fixed Length'}];
-        $scope.CopybookBnaryFormat = [{'id': 1, 'name':'Mainframe'}];
+        $scope.CopybookSplitLevels = [ {'id': 0,'name':'SplitNone'}, {'id': 1, 'name':'SplitRedefine'}, {'id': 2,'name':'Split01Level'},{'id': 3,'name':'SplitHighestRepeating'}];
+        $scope.CopybookFileStructure = [{'id': 2, 'name':'FixedLength'}];
+        $scope.CopybookBnaryFormat = [{'id': 1, 'name':'FMT_MAINFRAME'}];
         $scope.CopybookFont = ['cp037'];
 
-        $scope.uploadedCopybookFiles=[];
-        $scope.uploadedCopybookPath=null;
-        $scope.uploadedCopybookDataPath=null;
-        $scope.uploadedCopybookDataFiles=[];
         $scope.selectCopybookSplitLevel=null;
         $scope.selectCopybookFileStructure=null;
         $scope.selectCopybookBinaryFormat=null;
         $scope.selectCopybookFont=null;
+        $scope.copybookFile=null;
+        $scope.copybookDataFile=[];
+
+        $scope.setCopybookFile = function(element){
+          $scope.copybookFile = element.files[0];
+        };
+
+
 
         $scope.PreviewCopybookFile = function(){
               alert('Please input all the fields');
 
-              var formData = {
-                               'conn' : $scope.connectionName,
-                               'cpyBookName' : $scope.uploadedCopybookFiles[0],
-                               'cpyBookHdfsPath' : $scope.uploadedCopybookPath+'/'+ $scope.uploadedCopybookFiles[0],
-                               'dataFileHdfsPath': $scope.uploadedCopybookDataPath+$scope.uploadedCopybookDataFiles[0],
-                               'cpybookFont': $scope.selectCopybookFont,
-                               'fileStructure': $scope.selectCopybookFileStructure,
-                               'binaryFormat': $scope.selectCopybookBinaryFormat,
-                               'splitOptoin': $scope.selectCopybookFont
-                  };   
-                $http.post($rootScope.url+'/entity', formdata, {
+              var formData = new FormData(); 
+
+              var param = {
+                'cpyBookName' : $scope.copybookFile.name,
+                'cpybookFont': $scope.selectCopybookFont,
+                'fileStructure': $scope.selectCopybookFileStructure.name,
+                'binaryFormat' : $scope.selectCopybookBinaryFormat.name,
+                'splitOptoin': $scope.selectCopybookSplitLevel.name
+              };
+
+              formData.append('param', angular.toJson(param));  
+              formData.append($scope.copybookFile.name, $scope.copybookFile);  
+          
+                $http.post($rootScope.url+'/ingestion', formData, {
                   withCredentials: false,
                   transformRequest: angular.identity,
-                  headers: {'Content-Type': 'application/json'}})
+                  headers: {'Content-Type': undefined }})
               .success(function(response){
                  alert('success');
                 }).error(function(){

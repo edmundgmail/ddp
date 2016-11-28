@@ -66,7 +66,7 @@ class MyServiceActor extends Actor with MyService with FileUploadService with Co
       println("pushing to all children : " + msg)
       children.foreach(ref => ref ! Push(msg))
 */
-    runRoute(myRoute ~ cors(fileUploadRoute)) ~ cors(copybookSchemaRegisterRoute))
+    runRoute(myRoute ~ cors(fileUploadRoute) ~ cors(copybookSchemaRegisterRoute))
   }
 
  // def staticRoute: Route =
