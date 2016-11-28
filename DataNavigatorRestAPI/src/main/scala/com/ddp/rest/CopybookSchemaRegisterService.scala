@@ -52,16 +52,14 @@ trait CopybookSchemaRegisterService extends Directives{
               val details = formData.fields.map {
                 case BodyPart(entity, headers) =>
                   val key = headers.find(h => h.is("content-disposition")).get.value.split("name=").last
-                  key -> entity.data.asString.
+                  if(key.equals("param"))
+                    key -> entity.asString.parseJson.convertTo[CopybookSchemaRegisterParameter]
+                  else
+                    key->entity.asString
                 case _ => ""->""
               } toMap
 
-              val param = details.get("param")
-              .convertTo[CopybookSchemaRegisterParameter]
-              val cpybookFile = details.get(param.cpyBookName)
 
-              System.out.println("param=" + param.toString)
-              System.out.println("cpybookFile=" + cpybookFile)
               s"Success"
             }
           }
@@ -71,37 +69,7 @@ trait CopybookSchemaRegisterService extends Directives{
   }
 
 
-  private def saveAttachment(fileName: String, content: Array[Byte]): Boolean = {
-    saveAttachment[Array[Byte]](fileName, content, {(is, os) => os.write(is)})
-    true
-  }
 
-  private def saveAttachment(fileName: String, content: InputStream): Boolean = {
-    saveAttachment[InputStream](fileName, content,
-      { (is, os) =>
-        val buffer = new Array[Byte](16384)
-        Iterator
-          .continually (is.read(buffer))
-          .takeWhile (-1 !=)
-          .foreach (read=>os.write(buffer,0,read))
-      }
-    )
-  }
-
-  private def saveAttachment[T](fileName: String, content: T, writeFile: (T, OutputStream) => Unit): Boolean = {
-    try {
-      //val fos = new java.io.FileOutputStream(fileName)
-      val conf = new hadoop.conf.Configuration
-      conf.set("fs.defaultFS", config.getString("com.ddp.rest.defaultFS"))
-      val fs = FileSystem.get (conf)
-      val fos = new BufferedOutputStream(fs.create (new Path( fileName) ) )
-      writeFile(content, fos)
-      fos.close()
-      true
-    } catch {
-      case _ =>false
-    }
-  }
 
 
 }
