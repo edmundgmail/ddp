@@ -7,6 +7,7 @@ import spray.routing._
 import spray.http.BodyPart
 import java.io._
 
+import com.ddp.access.CopybookSchemaRegister
 import com.ddp.jdbc.{DataSourceConnection, FieldHierarchy}
 import org.apache.hadoop
 import org.apache.hadoop.conf.Configuration
@@ -25,16 +26,11 @@ import DefaultJsonProtocol._
 import spray.json._
 
 case class CopybookSchemaRegisterParameter(
-                                            cpyBookName : String,
-                                            cpybookFont: String = "cp037",
-                                            fileStructure: String = "FixedLength",
-                                            binaryFormat: String = "FMT_MAINFRAME",
-                                            splitOptoin: String = "SplitNone"
+                                            cpyBookName : String
                                           )
 
 object copybookSchemaRegisterJsonProtocol extends DefaultJsonProtocol {
-  implicit val copybookSchemaRegisterParameterFormat = jsonFormat5(CopybookSchemaRegisterParameter)
-
+  implicit val copybookSchemaRegisterParameterFormat = jsonFormat1(CopybookSchemaRegisterParameter)
 }
 
 import copybookSchemaRegisterJsonProtocol._
@@ -54,13 +50,20 @@ trait CopybookSchemaRegisterService extends Directives{
                   val key = headers.find(h => h.is("content-disposition")).get.value.split("name=").last
                   if(key.equals("param"))
                     key -> entity.asString.parseJson.convertTo[CopybookSchemaRegisterParameter]
-                  else
+                  else if(key.equals("cpybook"))
                     key->entity.asString
+                  else
+                    key->entity.data.toByteArray
+
                 case _ => ""->""
               } toMap
+              val param =  details.get("param").get.asInstanceOf[CopybookSchemaRegisterParameter]
+              val cpybook = details.get(param.cpyBookName).get.asInstanceOf[String]
+              val datafiles = details.filterKeys( key=> (!key.equals("param") && !key.equals("cpybook")))
 
+              CopybookSchemaRegister(config, param, cpybook, datafiles).run
 
-              s"Success"
+              s"complete"
             }
           }
         }

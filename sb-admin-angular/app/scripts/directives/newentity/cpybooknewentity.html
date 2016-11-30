@@ -9,27 +9,9 @@
     
     <div class="form-group">
         <label>Select Copybook Sample data files</label> 
-        <div hdfsfileuploader multiple="true" uploadedpath="uploadedCopybookDataPath" uploadedfiles="uploadedCopybookDataFiles" required> </div>
+        <input type="file" multiple onchange="angular.element(this).scope().setCopybookDataFile(this)" />
     </div>
 
-    <div class="form-group">
-        <label>Select Copybook Split Option</label> 
-       <select ng-model="selectCopybookSplitLevel"  class="form-control" ng-options="x.name for x in CopybookSplitLevels" required> </select>
-    </div>
-
-    <div class="form-group">
-        <label>Select Copybook File Structure</label> 
-       <select ng-model="selectCopybookFileStructure"  class="form-control" ng-options="x.name for x in CopybookFileStructure" required></select>
-    </div>
-
-    <div class="form-group">
-        <label>Select Copybook Binary Format</label> 
-       <select ng-model="selectCopybookBinaryFormat"  class="form-control" ng-options="x.name for x in CopybookBnaryFormat" required></select>
-    </div>
-    <div class="form-group">
-        <label>Select Copybook Font</label> 
-       <select ng-model="selectCopybookFont"  class="form-control" ng-options="x for x in CopybookFont" required></select>
-    </div>
     <button class="btn btn-primary" ng-disabled="previewForm.$invalid">Preview</button>
 </form>
 </div>
