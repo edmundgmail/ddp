@@ -51,15 +51,15 @@ trait CopybookSchemaRegisterService extends Directives{
                   if(key.equals("param"))
                     key -> entity.asString.parseJson.convertTo[CopybookSchemaRegisterParameter]
                   else if(key.equals("cpybook"))
-                    key->entity.asString
+                    key->entity.data.toByteArray
                   else
                     key->entity.data.toByteArray
 
                 case _ => ""->""
               } toMap
               val param =  details.get("param").get.asInstanceOf[CopybookSchemaRegisterParameter]
-              val cpybook = details.get(param.cpyBookName).get.asInstanceOf[String]
-              val datafiles = details.filterKeys( key=> (!key.equals("param") && !key.equals("cpybook")))
+              val cpybook = new String(details.get(param.cpyBookName).get.asInstanceOf[Array[Byte]])
+              val datafiles = details.filterKeys( key=> (!key.equals("param") && !key.equals("cpybook"))).mapValues(_.asInstanceOf[Array[Byte]])
 
               CopybookSchemaRegister(config, param, cpybook, datafiles).run
 

@@ -16,6 +16,11 @@ import com.legstar.cob2xsd.Cob2XsdConfig
 import com.sun.jersey.server.impl.model.parameter.multivalued.StringReaderProviders
 import io.confluent.kafka.schemaregistry.client.CachedSchemaRegistryClient
 import org.apache.avro.Schema
+import org.apache.avro.file.DataFileStream
+import org.apache.avro.generic.GenericRecord
+import org.apache.avro.specific.SpecificDatumReader
+import org.apache.commons.io.input.CharSequenceReader
+import org.apache.kafka.clients.producer.{KafkaProducer, ProducerConfig}
 
 /**
   * Created by cloudera on 11/25/16.
@@ -25,29 +30,40 @@ case class CopybookSchemaRegister  (config: Config, param: CopybookSchemaRegiste
   override def run() : Any = {
       val gen : Cob2AvroGenerator = new Cob2AvroGenerator(Cob2XsdConfig.getDefaultConfigProps)
       val file = Files.createTempDir()
-      file.deleteOnExit()
+      //file.deleteOnExit()
+
+      System.out.println("copybook=" + copybook)
       gen.generate(new StringReader(copybook), file,  "com.ddp.user", param.cpyBookName, null)
 
       System.out.println("now start dumping files, file path=" + file.getAbsolutePath)
-      listAvroFile(file).map(registerAvro)
+      val files = listAvroFile(file)
+      System.out.println("")
+      val schema = registerAvro (listAvroFile(file)(0))
 
-      datafiles.mapValues(sendFileToKafka)
+      datafiles.mapValues(f=> sendFileToKafka(schema, f))
       }
 
-  private def sendFileToKafka( bytes: Array[Byte] ): Unit ={
-    val config = new Properties();
-    config.put("client.id", InetAddress.getLocalHost().getHostName());
-    config.put("bootstrap.servers", "host1:9092,host2:9092");
-    config.put("acks", "all");
-    val producer = new KafkProducer<K, V>(config);
+  private def sendFileToKafka(schema : Schema, bytes: Array[Byte] ): Unit ={
+    val props = new Properties()
+    props.put(ProducerConfig.KEY_SERIALIZER_CLASS_CONFIG, classOf[io.confluent.kafka.serializers.KafkaAvroSerializer])
+    props.put(ProducerConfig.VALUE_SERIALIZER_CLASS_CONFIG, classOf[io.confluent.kafka.serializers.KafkaAvroSerializer]);
+    props.put("schema.registry.url", "http://localhost:8081");
+    // Set any other properties
+    val producer = new KafkaProducer(props)
+
+    val reader = new SpecificDatumReader[CopybookSchemaRegisterParameter]
+    reader.setSchema(schema)
+
+    val fileStream = new DataFileStream[CopybookSchemaRegisterParameter](new ByteArrayInputStream(bytes), reader)
   }
 
-  private def registerAvro(file: File): Unit ={
+  private def registerAvro(file: File): Schema ={
     System.out.println("now registering")
     val client = new CachedSchemaRegistryClient("http://localhost:8081", 1000)
     val schema: Schema = new Schema.Parser().parse(file)
 
     client.register("topic123", schema)
+    return schema
   }
 
   private def listAvroFile(file: File): Array[File] = {
