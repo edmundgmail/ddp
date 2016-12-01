@@ -2,7 +2,8 @@ package com.ddp.access
 
 import java.io._
 import java.net.InetAddress
-import java.util.Properties
+import java.util.{Arrays, Properties}
+import javax.tools._
 
 import com.ddp.cpybook.Constants
 import com.ddp.rest.{CopybookIngestionParameter, CopybookSchemaRegisterParameter}
@@ -39,9 +40,17 @@ case class CopybookSchemaRegister  (config: Config, param: CopybookSchemaRegiste
       val files = listAvroFile(file)
       System.out.println("")
       val schema = registerAvro (listAvroFile(file)(0))
-
+      compileJavaFile(file)
       datafiles.mapValues(f=> sendFileToKafka(schema, f))
       }
+
+  private def compileJavaFile(file: File): Unit = {
+    val diagnostics: DiagnosticCollector[JavaFileObject] = new DiagnosticCollector[JavaFileObject]
+    val compiler: JavaCompiler = ToolProvider.getSystemJavaCompiler
+    val fileManager: StandardJavaFileManager = compiler.getStandardFileManager(diagnostics, null, null)
+
+    val compilationUnit: Iterable[_ <: JavaFileObject] = fileManager.getJavaFileObjectsFromFiles(Arrays.asList(file))
+  }
 
   private def sendFileToKafka(schema : Schema, bytes: Array[Byte] ): Unit ={
     val props = new Properties()
