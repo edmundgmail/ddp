@@ -16,7 +16,6 @@ import org.apache.commons.io.filefilter.HiddenFileFilter;
 
 public class CreateJarFile {
 
-
     public static String mkJar(File classes, String mainClassName) throws IOException
     {
         String jarName = mainClassName + System.currentTimeMillis() + "_" + (new java.util.Random()).nextInt(10000) + ".jar";
@@ -27,7 +26,13 @@ public class CreateJarFile {
         JarOutputStream target = new JarOutputStream(new FileOutputStream(jarName), manifest);
 
         //add(classes, target); //not sure if this is right tho.
-        for(File f : classes.listFiles((FileFilter) HiddenFileFilter.VISIBLE)){
+        for(File f : classes.listFiles(new FileFilter() {
+            @Override
+            public boolean accept(File pathname) {
+                if(pathname.isFile() && pathname.getName().endsWith(".class")) return true;
+                return false;
+            }
+        })){
             add(f, target, classes.getName());
         }
 

@@ -14,6 +14,7 @@ import org.apache.hadoop.conf.Configuration
 import org.apache.hadoop.fs.{FileSystem, Path}
 import com.typesafe.config.ConfigFactory
 import com.ddp.utils.Utils
+import org.xeustechnologies.jcl.{JarClassLoader, JclObjectFactory}
 
 // we don't implement our route structure directly in the service actor because
 // we want to be able to test it independently, without having to spin up an actor
@@ -39,6 +40,9 @@ trait CopybookSchemaRegisterService extends Directives{
 
   private val config = ConfigFactory.load()
 
+  val jclFactory : JclObjectFactory = JclObjectFactory.getInstance()
+  val jcl: JarClassLoader = new JarClassLoader()
+
   val copybookSchemaRegisterRoute: Route = {
     path("ingestion") {
       post {
@@ -61,7 +65,7 @@ trait CopybookSchemaRegisterService extends Directives{
               val cpybook = new String(details.get(param.cpyBookName).get.asInstanceOf[Array[Byte]])
               val datafiles = details.filterKeys( key=> (!key.equals("param") && !key.equals("cpybook"))).mapValues(_.asInstanceOf[Array[Byte]])
 
-              CopybookSchemaRegister(config, param, cpybook, datafiles).run
+              CopybookSchemaRegister(jclFactory, jcl, param, cpybook, datafiles).run()
 
               s"complete"
             }
