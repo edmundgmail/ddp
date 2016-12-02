@@ -1,5 +1,8 @@
 package com.ddp.jarmanager;
 
+import org.xeustechnologies.jcl.JarClassLoader;
+import org.xeustechnologies.jcl.JclObjectFactory;
+
 import java.io.File;
 import java.io.FileWriter;
 import java.io.IOException;
@@ -18,7 +21,7 @@ import javax.tools.ToolProvider;
 
 public class InlineCompiler {
 
-    public static void compile(String pkg, String className, List<File> helloWorldJava) {
+    public static void compile(JclObjectFactory jclFactory, JarClassLoader jcl, String pkg, String className, List<File> helloWorldJava) {
 
         for(File file : helloWorldJava){
             System.out.println("filename=" + file.getAbsolutePath());
@@ -43,6 +46,7 @@ public class InlineCompiler {
                         optionList,
                         null,
                         compilationUnit);
+
                 /********************************************************************************************* Compilation Requirements **/
                 if (task.call()) {
                     /** Load and execute *************************************************************************************************/

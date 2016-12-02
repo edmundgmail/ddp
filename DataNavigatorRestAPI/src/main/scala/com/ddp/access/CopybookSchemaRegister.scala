@@ -52,12 +52,17 @@ case class CopybookSchemaRegister  (jclFactory: JclObjectFactory, jcl : JarClass
       System.out.println("schemaname=" + schema.getName)
 
 
-       InlineCompiler.compile("","",recursiveListFiles(file).filter(_.isFile).filter(_.getName.endsWith(".java")).asJava)
-      val jar = CreateJarFile.mkJar(file, "Main")
-      jcl.add(jar)
+      InlineCompiler.compile(jclFactory, jcl, "","",recursiveListFiles(file).filter(_.isFile).filter(_.getName.endsWith(".java")).asJava)
+      recursiveListFiles(file).filter(_.isFile).filter(_.getName.endsWith(".class")).foreach(f=>{System.out.println(f.getAbsolutePath); jcl.add(new FileInputStream(f))})
+      //val jar = CreateJarFile.mkJar(file, "Main")
+      //jcl.add(jar)
+    System.out.println("size="+jcl.getLoadedClasses.size)
+    jcl.getLoadedClasses.entrySet().toArray.foreach(System.out.println)
 
-      val clazz = jcl.loadClass(pkgPrefix + "." + schema.getName)
-      System.out.println("clazz name = " + clazz.getName)
+      val factory = JclObjectFactory.getInstance()
+
+      //val clazz = factory.create(jcl, schema.getName);
+      //System.out.println("clazz name = " + clazz.getClass.getName)
       datafiles.mapValues(f=> sendFileToKafka(schema, f))
       }
 

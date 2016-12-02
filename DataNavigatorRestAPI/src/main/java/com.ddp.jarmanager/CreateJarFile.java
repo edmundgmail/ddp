@@ -26,13 +26,13 @@ public class CreateJarFile {
         JarOutputStream target = new JarOutputStream(new FileOutputStream(jarName), manifest);
 
         //add(classes, target); //not sure if this is right tho.
-        for(File f : classes.listFiles(new FileFilter() {
+        for(File f : classes.listFiles(/*new FileFilter() {
             @Override
             public boolean accept(File pathname) {
                 if(pathname.isFile() && pathname.getName().endsWith(".class")) return true;
                 return false;
             }
-        })){
+        }*/)){
             add(f, target, classes.getName());
         }
 
