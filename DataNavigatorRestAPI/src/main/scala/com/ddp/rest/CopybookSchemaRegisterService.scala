@@ -50,9 +50,9 @@ trait CopybookSchemaRegisterService extends Directives{
           entity(as[MultipartFormData]) { formData =>
             complete {
               val details = formData.fields.map {
-                case BodyPart(entity, headers) =>
-                  val key = headers.find(h => h.is("content-disposition")).get.value.split("name=").last
-                  if(key.equals("param"))
+                case (entity, headers, name) =>
+                  //val key = headers.find(h => h.is("content-disposition")).get.value.split("name=").last
+                  if(name.equals("param"))
                     key -> entity.asString.parseJson.convertTo[CopybookSchemaRegisterParameter]
                   else if(key.equals("cpybook"))
                     key->entity.data.toByteArray

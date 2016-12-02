@@ -20,7 +20,7 @@ import io.confluent.kafka.schemaregistry.client.CachedSchemaRegistryClient
 import org.apache.avro.Schema
 import org.apache.avro.file.DataFileStream
 import org.apache.avro.generic.GenericRecord
-import org.apache.avro.specific.SpecificDatumReader
+import org.apache.avro.specific.{SpecificDatumReader, SpecificRecord}
 import org.apache.commons.io.input.CharSequenceReader
 import org.apache.kafka.clients.producer.{KafkaProducer, ProducerConfig}
 import org.xeustechnologies.jcl.{JarClassLoader, JclObjectFactory}
@@ -53,17 +53,17 @@ case class CopybookSchemaRegister  (jclFactory: JclObjectFactory, jcl : JarClass
 
 
       InlineCompiler.compile(jclFactory, jcl, "","",recursiveListFiles(file).filter(_.isFile).filter(_.getName.endsWith(".java")).asJava)
-      recursiveListFiles(file).filter(_.isFile).filter(_.getName.endsWith(".class")).foreach(f=>{System.out.println(f.getAbsolutePath); jcl.add(new FileInputStream(f))})
+    System.out.println("path=" + file.getPath)
+      jcl.add(file.getPath + "/java")
       //val jar = CreateJarFile.mkJar(file, "Main")
       //jcl.add(jar)
     System.out.println("size="+jcl.getLoadedClasses.size)
     jcl.getLoadedClasses.entrySet().toArray.foreach(System.out.println)
 
-      val factory = JclObjectFactory.getInstance()
-
-      //val clazz = factory.create(jcl, schema.getName);
-      //System.out.println("clazz name = " + clazz.getClass.getName)
-      datafiles.mapValues(f=> sendFileToKafka(schema, f))
+      val clazz = jclFactory.create(jcl, pkgPrefix + "." + schema.getName);
+      System.out.println("clazz name = " + clazz.getClass.getName)
+    System.out.println("keys = " + datafiles.keySet.toString())
+      datafiles.mapValues(f=> {sendFileToKafka(schema, f)})
       }
 
 
@@ -72,18 +72,23 @@ case class CopybookSchemaRegister  (jclFactory: JclObjectFactory, jcl : JarClass
     these ++ these.filter(_.isDirectory).flatMap(recursiveListFiles)
   }
 
-  private def sendFileToKafka(schema : Schema, bytes: Array[Byte] ): Unit ={
+  private def sendFileToKafka(schema : Schema, bytes: Array[Byte]): Unit ={
     val props = new Properties()
     props.put(ProducerConfig.KEY_SERIALIZER_CLASS_CONFIG, classOf[io.confluent.kafka.serializers.KafkaAvroSerializer])
     props.put(ProducerConfig.VALUE_SERIALIZER_CLASS_CONFIG, classOf[io.confluent.kafka.serializers.KafkaAvroSerializer])
     props.put("schema.registry.url", "http://localhost:8081")
     // Set any other properties
     val producer = new KafkaProducer(props)
+    //val clazz = Class.forName(pkgPrefix + "." + schema.getName).
 
-    val reader = new SpecificDatumReader[CopybookSchemaRegisterParameter]
+    val reader = new SpecificDatumReader[SpecificRecord]
     reader.setSchema(schema)
 
-    val fileStream = new DataFileStream[CopybookSchemaRegisterParameter](new ByteArrayInputStream(bytes), reader)
+    val fileStream = new DataFileStream[SpecificRecord](new ByteArrayInputStream(bytes), reader)
+   while(fileStream.hasNext){
+     System.out.println(fileStream.next())
+   }
+
   }
 
   private def registerAvro(file: File): Schema ={
