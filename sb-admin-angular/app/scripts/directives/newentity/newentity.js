@@ -35,7 +35,8 @@ angular.module('sbAdminApp')
           $scope.copybookFile = element.files[0];
         };
        $scope.setCopybookDataFile = function(element){
-          $scope.copybookDataFile.push(element.files);
+          $scope.copybookDataFile = [];
+          angular.forEach(element.files, function(file){$scope.copybookDataFile.push(file);});
         };
 
 

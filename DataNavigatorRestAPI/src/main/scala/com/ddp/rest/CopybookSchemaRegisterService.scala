@@ -50,9 +50,10 @@ trait CopybookSchemaRegisterService extends Directives{
           entity(as[MultipartFormData]) { formData =>
             complete {
               val details = formData.fields.map {
-                case (entity, headers, name) =>
-                  //val key = headers.find(h => h.is("content-disposition")).get.value.split("name=").last
-                  if(name.equals("param"))
+                case BodyPart(entity, headers) =>
+                  //val key = headers.find(h => h.is("content-disposition")).get.value.split(";").map(_.trim).filter(_.startsWith("name="))(0).split("name=").last
+                  val key = headers(0).value.split(";").map(_.trim).find(_.startsWith("name=")).get.substring(5)
+                  if(key.equals("param"))
                     key -> entity.asString.parseJson.convertTo[CopybookSchemaRegisterParameter]
                   else if(key.equals("cpybook"))
                     key->entity.data.toByteArray
@@ -62,7 +63,7 @@ trait CopybookSchemaRegisterService extends Directives{
                 case _ => ""->""
               } toMap
               val param =  details.get("param").get.asInstanceOf[CopybookSchemaRegisterParameter]
-              val cpybook = new String(details.get(param.cpyBookName).get.asInstanceOf[Array[Byte]])
+              val cpybook = new String(details.get("cpybook").get.asInstanceOf[Array[Byte]])
               val datafiles = details.filterKeys( key=> (!key.equals("param") && !key.equals("cpybook"))).mapValues(_.asInstanceOf[Array[Byte]])
 
               CopybookSchemaRegister(jclFactory, jcl, param, cpybook, datafiles).run()

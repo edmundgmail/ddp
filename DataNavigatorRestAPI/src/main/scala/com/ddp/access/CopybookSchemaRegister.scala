@@ -18,11 +18,12 @@ import com.legstar.cob2xsd.Cob2XsdConfig
 import com.sun.jersey.server.impl.model.parameter.multivalued.StringReaderProviders
 import io.confluent.kafka.schemaregistry.client.CachedSchemaRegistryClient
 import org.apache.avro.Schema
-import org.apache.avro.file.DataFileStream
+import org.apache.avro.file.{DataFileReader, DataFileStream}
 import org.apache.avro.generic.GenericRecord
+import org.apache.avro.io.{Decoder, DecoderFactory}
 import org.apache.avro.specific.{SpecificDatumReader, SpecificRecord}
 import org.apache.commons.io.input.CharSequenceReader
-import org.apache.kafka.clients.producer.{KafkaProducer, ProducerConfig}
+import org.apache.kafka.clients.producer.{KafkaProducer, ProducerConfig, ProducerRecord}
 import org.xeustechnologies.jcl.{JarClassLoader, JclObjectFactory}
 
 import scala.collection.JavaConverters._
@@ -63,7 +64,7 @@ case class CopybookSchemaRegister  (jclFactory: JclObjectFactory, jcl : JarClass
       val clazz = jclFactory.create(jcl, pkgPrefix + "." + schema.getName);
       System.out.println("clazz name = " + clazz.getClass.getName)
     System.out.println("keys = " + datafiles.keySet.toString())
-      datafiles.mapValues(f=> {sendFileToKafka(schema, f)})
+      datafiles.foreach{case (_,v) => sendFileToKafka(schema, v)}
       }
 
 
@@ -77,18 +78,19 @@ case class CopybookSchemaRegister  (jclFactory: JclObjectFactory, jcl : JarClass
     props.put(ProducerConfig.KEY_SERIALIZER_CLASS_CONFIG, classOf[io.confluent.kafka.serializers.KafkaAvroSerializer])
     props.put(ProducerConfig.VALUE_SERIALIZER_CLASS_CONFIG, classOf[io.confluent.kafka.serializers.KafkaAvroSerializer])
     props.put("schema.registry.url", "http://localhost:8081")
+    props.put("bootstrap.servers", "localhost:9092");
     // Set any other properties
     val producer = new KafkaProducer(props)
     //val clazz = Class.forName(pkgPrefix + "." + schema.getName).
 
     val reader = new SpecificDatumReader[SpecificRecord]
     reader.setSchema(schema)
+    val bin = new ByteArrayInputStream(bytes);
 
-    val fileStream = new DataFileStream[SpecificRecord](new ByteArrayInputStream(bytes), reader)
-   while(fileStream.hasNext){
-     System.out.println(fileStream.next())
-   }
-
+    val decoder = DecoderFactory.get().binaryDecoder(
+      new ByteArrayInputStream(bytes), null);
+    val d = reader.read(null, decoder)
+    producer.send(new ProducerRecord[]())
   }
 
   private def registerAvro(file: File): Schema ={
