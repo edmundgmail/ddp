@@ -9,6 +9,7 @@ import com.ddp.cpybook.Constants
 import com.ddp.jarmanager.{CreateJarFile, InlineCompiler}
 import com.ddp.rest.{CopybookIngestionParameter, CopybookSchemaRegisterParameter}
 import com.ddp.rest.WorkerActor.Ok
+import com.ddp.user.DclvrpwSAccts
 import com.google.common.io.Files
 import com.typesafe.config.Config
 import org.apache.hadoop
@@ -22,11 +23,13 @@ import org.apache.avro.file.{DataFileReader, DataFileStream}
 import org.apache.avro.generic.GenericRecord
 import org.apache.avro.io.{Decoder, DecoderFactory}
 import org.apache.avro.specific.{SpecificDatumReader, SpecificRecord}
+import org.apache.avro.generic._
 import org.apache.commons.io.input.CharSequenceReader
 import org.apache.kafka.clients.producer.{KafkaProducer, ProducerConfig, ProducerRecord}
 import org.xeustechnologies.jcl.{JarClassLoader, JclObjectFactory}
 
 import scala.collection.JavaConverters._
+import com.ddp.user._
 /**
   * Created by cloudera on 11/25/16.
   */
@@ -80,17 +83,18 @@ case class CopybookSchemaRegister  (jclFactory: JclObjectFactory, jcl : JarClass
     props.put("schema.registry.url", "http://localhost:8081")
     props.put("bootstrap.servers", "localhost:9092");
     // Set any other properties
-    val producer = new KafkaProducer(props)
+    val producer = new KafkaProducer[String, DclvrpwSAccts](props)
     //val clazz = Class.forName(pkgPrefix + "." + schema.getName).
 
-    val reader = new SpecificDatumReader[SpecificRecord]
-    reader.setSchema(schema)
+    val reader = new SpecificDatumReader[DclvrpwSAccts](DclvrpwSAccts.getClassSchema)
+    //reader.setSchema(schema)
     val bin = new ByteArrayInputStream(bytes);
 
     val decoder = DecoderFactory.get().binaryDecoder(
       new ByteArrayInputStream(bytes), null);
     val d = reader.read(null, decoder)
-    producer.send(new ProducerRecord[]())
+    val record = new ProducerRecord[String, DclvrpwSAccts]("test123", "t", d)
+    producer.send(record)
   }
 
   private def registerAvro(file: File): Schema ={
