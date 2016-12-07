@@ -48,7 +48,7 @@ case class CopybookSchemaRegister  (jclFactory: JclObjectFactory, jcl : JarClass
       System.out.println("copybook=" + copybook)
       gen.generate(new StringReader(copybook), file,  pkgPrefix, param.cpyBookName, null)
 
-      System.out.println("now start dumping files, file path=" + file.getAbsolutePath)
+     System.out.println("now start dumping files, file path=" + file.getAbsolutePath)
       val files = listAvroFile(file)
       System.out.println("")
       val schema = registerAvro (listAvroFile(file)(0))
