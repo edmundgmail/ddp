@@ -30,6 +30,9 @@ import org.xeustechnologies.jcl.{JarClassLoader, JclObjectFactory}
 
 import scala.collection.JavaConverters._
 import com.ddp.user._
+import com.legstar.avro.cob2avro.Cob2AvroGenericConverter
+import com.legstar.base.`type`.composite.CobolComplexType
+import com.legstar.base.converter.FromHostResult
 /**
   * Created by cloudera on 11/25/16.
   */
@@ -56,18 +59,12 @@ case class CopybookSchemaRegister  (jclFactory: JclObjectFactory, jcl : JarClass
       System.out.println("schemaname=" + schema.getName)
 
 
-      InlineCompiler.compile(jclFactory, jcl, "","",recursiveListFiles(file).filter(_.isFile).filter(_.getName.endsWith(".java")).asJava)
+      InlineCompiler.compile(jclFactory, jcl, "","",recursiveListFiles(file).filter(_.isFile).filter(_.getName.startsWith("Cobol")).filter(_.getName.endsWith(".java")).asJava)
     System.out.println("path=" + file.getPath)
       jcl.add(file.getPath + "/java")
-      //val jar = CreateJarFile.mkJar(file, "Main")
-      //jcl.add(jar)
-    System.out.println("size="+jcl.getLoadedClasses.size)
-    jcl.getLoadedClasses.entrySet().toArray.foreach(System.out.println)
+      val clazz = jclFactory.create(jcl, pkgPrefix + ".Cobol" + schema.getName).asInstanceOf[CobolComplexType]
 
-      val clazz = jclFactory.create(jcl, pkgPrefix + "." + schema.getName);
-      System.out.println("clazz name = " + clazz.getClass.getName)
-    System.out.println("keys = " + datafiles.keySet.toString())
-      datafiles.foreach{case (_,v) => sendFileToKafka(schema, v)}
+      datafiles.foreach{case (_,v) => sendFileToKafka(schema, clazz, v)}
       }
 
 
@@ -76,24 +73,20 @@ case class CopybookSchemaRegister  (jclFactory: JclObjectFactory, jcl : JarClass
     these ++ these.filter(_.isDirectory).flatMap(recursiveListFiles)
   }
 
-  private def sendFileToKafka(schema : Schema, bytes: Array[Byte]): Unit ={
+  private def sendFileToKafka(schema : Schema, clazz: CobolComplexType, bytes: Array[Byte]): Unit ={
     val props = new Properties()
     props.put(ProducerConfig.KEY_SERIALIZER_CLASS_CONFIG, classOf[io.confluent.kafka.serializers.KafkaAvroSerializer])
     props.put(ProducerConfig.VALUE_SERIALIZER_CLASS_CONFIG, classOf[io.confluent.kafka.serializers.KafkaAvroSerializer])
     props.put("schema.registry.url", "http://localhost:8081")
     props.put("bootstrap.servers", "localhost:9092");
-    // Set any other properties
-    val producer = new KafkaProducer[String, DclvrpwSAccts](props)
-    //val clazz = Class.forName(pkgPrefix + "." + schema.getName).
+    val producer = new KafkaProducer[String, GenericRecord](props);
 
-    val reader = new SpecificDatumReader[DclvrpwSAccts](DclvrpwSAccts.getClassSchema)
-    //reader.setSchema(schema)
-    val bin = new ByteArrayInputStream(bytes);
+    val converter: Cob2AvroGenericConverter = new Cob2AvroGenericConverter.Builder().cobolComplexType(clazz).
+      schema(schema).build()
 
-    val decoder = DecoderFactory.get().binaryDecoder(
-      new ByteArrayInputStream(bytes), null);
-    val d = reader.read(null, decoder)
-    val record = new ProducerRecord[String, DclvrpwSAccts]("test123", "t", d)
+    val result: FromHostResult[GenericRecord] = converter.convert(bytes)
+    val record = new ProducerRecord[String, GenericRecord]("topic123", "t", result.getValue)
+    System.out.println("record=" + result.getValue)
     producer.send(record)
   }
 

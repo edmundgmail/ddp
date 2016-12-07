@@ -26,58 +26,43 @@ import com.legstar.cob2xsd.Cob2XsdConfig
 
 import scala.collection.AbstractIterator
 import scala.collection.JavaConverters._
-object TestAvroFile extends App{
-        System.out.println("hello")
+object TestAvroFile extends App {
+  System.out.println("hello")
 
-        val jclFactory : JclObjectFactory = JclObjectFactory.getInstance()
-        val jcl: JarClassLoader = new JarClassLoader()
-        val datafile = "/home/eguo/workspace/ddp/data/RPWACT.FIXED.END"
-        val cpybookfile = "/home/eguo/workspace/ddp/data/LRPWSACT.cpy"
-        //val datafile = "/home/eguo/workspace/JRecord/SampleFiles/Fujitsu/FujitsuVariableWidthFile.seq"
-        //val cpybookfile = "/home/eguo/workspace/JRecord/SampleFiles/Fujitsu/RBIVCopy.cbl"
-
-
-          val pkgPrefix="com.ddp.user"
-      val file = Files.createTempDir()
-        //val param =  CopybookSchemaRegisterParameter("LRPWSACT")
-        val cpybook = scala.io.Source.fromFile(cpybookfile).mkString
-        val gen : Cob2AvroGenerator = new Cob2AvroGenerator(Cob2XsdConfig.getDefaultConfigProps)
+  val jclFactory: JclObjectFactory = JclObjectFactory.getInstance()
+  val jcl: JarClassLoader = new JarClassLoader()
+  val datafile = "/home/eguo/workspace/ddp/data/RPWACT.FIXED.END"
+  val cpybookfile = "/home/eguo/workspace/ddp/data/LRPWSACT.cpy"
+  //val datafile = "/home/eguo/workspace/JRecord/SampleFiles/Fujitsu/FujitsuVariableWidthFile.seq"
+  //val cpybookfile = "/home/eguo/workspace/JRecord/SampleFiles/Fujitsu/RBIVCopy.cbl"
 
 
-        val byteArray = java.nio.file.Files.readAllBytes(Paths.get(datafile))
+  val pkgPrefix = "com.ddp.user"
+  val file = Files.createTempDir()
+  //val param =  CopybookSchemaRegisterParameter("LRPWSACT")
+  val cpybook = scala.io.Source.fromFile(cpybookfile).mkString
+  val gen: Cob2AvroGenerator = new Cob2AvroGenerator(Cob2XsdConfig.getDefaultConfigProps)
 
-        val datafiles = Map("RPWACT.FIXED.END"->byteArray)
-        gen.generate(new StringReader(cpybook), file,  pkgPrefix, "LRPWSACT", null)
 
-        val schema = registerAvro (listAvroFile(file)(0))
-        //CopybookSchemaRegister(jclFactory, jcl, param, cpybook, datafiles).run()
-        InlineCompiler.compile(jclFactory, jcl, "","",recursiveListFiles(file).filter(_.isFile).filter(_.getName.endsWith(".java")).asJava)
+  val byteArray = java.nio.file.Files.readAllBytes(Paths.get(datafile))
+
+  val datafiles = Map("RPWACT.FIXED.END" -> byteArray)
+  gen.generate(new StringReader(cpybook), file, pkgPrefix, "LRPWSACT", null)
+
+  val schema = registerAvro(listAvroFile(file)(0))
+  //CopybookSchemaRegister(jclFactory, jcl, param, cpybook, datafiles).run()
+  InlineCompiler.compile(jclFactory, jcl, "", "", recursiveListFiles(file).filter(_.isFile).filter(_.getName.endsWith(".java")).asJava)
   jcl.add(file.getPath + "/java")
   val clazz = jclFactory.create(jcl, pkgPrefix + ".Cobol" + schema.getName).asInstanceOf[CobolComplexType];
 
-        val converter: Cob2AvroGenericConverter = new Cob2AvroGenericConverter.Builder().cobolComplexType(clazz).
-          schema(schema).build()
+  val converter: Cob2AvroGenericConverter = new Cob2AvroGenericConverter.Builder().cobolComplexType(clazz).
+    schema(schema).build()
 
-    var i = 0
-    for(){
-      result: FromHostResult[GenericRecord] = converter.convert(byteArray, i, byteArray.length)
-      i+=result.getBytesProcessed
+  val result: FromHostResult[GenericRecord] = converter.convert(byteArray)
 
-    }
-        val result: FromHostResult[GenericRecord] = converter.convert(byteArray)
-
-        System.out.print(result.getValue.toString)
+  System.out.print(result.getValue.toString)
 
 
-  private def toIter(byteArray: Array[Byte]): Iterator[GenericRecord] = new AbstractIterator[GenericRecord] {
-    var idx = 0
-    def hasNext = this.hasNext
-    def next = {
-      val ret = (this.next, idx)
-      idx += 1
-      ret
-    }
-  }
 
   private def recursiveListFiles(f: File): List[File] = {
     val these = f.listFiles.toList
