@@ -33,6 +33,8 @@ import com.ddp.user._
 import com.legstar.avro.cob2avro.Cob2AvroGenericConverter
 import com.legstar.base.`type`.composite.CobolComplexType
 import com.legstar.base.converter.FromHostResult
+
+import scala.collection.AbstractIterator
 /**
   * Created by cloudera on 11/25/16.
   */
@@ -42,6 +44,18 @@ case class CopybookSchemaRegister  (jclFactory: JclObjectFactory, jcl : JarClass
   val fileManager: StandardJavaFileManager = compiler.getStandardFileManager(diagnostics, null, null)
 
   val pkgPrefix = "com.ddp.user"
+
+
+  val producer = {
+    val props = new Properties()
+    props.put(ProducerConfig.KEY_SERIALIZER_CLASS_CONFIG, classOf[io.confluent.kafka.serializers.KafkaAvroSerializer])
+    props.put(ProducerConfig.VALUE_SERIALIZER_CLASS_CONFIG, classOf[io.confluent.kafka.serializers.KafkaAvroSerializer])
+    props.put("schema.registry.url", "http://localhost:8081")
+    props.put("bootstrap.servers", "localhost:9092")
+    new KafkaProducer[String, GenericRecord](props)
+  }
+
+
 
   override def run() : Any = {
       val gen : Cob2AvroGenerator = new Cob2AvroGenerator(Cob2XsdConfig.getDefaultConfigProps)
@@ -63,8 +77,10 @@ case class CopybookSchemaRegister  (jclFactory: JclObjectFactory, jcl : JarClass
     System.out.println("path=" + file.getPath)
       jcl.add(file.getPath + "/java")
       val clazz = jclFactory.create(jcl, pkgPrefix + ".Cobol" + schema.getName).asInstanceOf[CobolComplexType]
+      val converter: Cob2AvroGenericConverter = new Cob2AvroGenericConverter.Builder().cobolComplexType(clazz).
+      schema(schema).build()
 
-      datafiles.foreach{case (_,v) => sendFileToKafka(schema, clazz, v)}
+      datafiles.foreach{case (_,v) => sendFileToKafka(converter, v)}
       }
 
 
@@ -73,21 +89,24 @@ case class CopybookSchemaRegister  (jclFactory: JclObjectFactory, jcl : JarClass
     these ++ these.filter(_.isDirectory).flatMap(recursiveListFiles)
   }
 
-  private def sendFileToKafka(schema : Schema, clazz: CobolComplexType, bytes: Array[Byte]): Unit ={
-    val props = new Properties()
-    props.put(ProducerConfig.KEY_SERIALIZER_CLASS_CONFIG, classOf[io.confluent.kafka.serializers.KafkaAvroSerializer])
-    props.put(ProducerConfig.VALUE_SERIALIZER_CLASS_CONFIG, classOf[io.confluent.kafka.serializers.KafkaAvroSerializer])
-    props.put("schema.registry.url", "http://localhost:8081")
-    props.put("bootstrap.servers", "localhost:9092");
-    val producer = new KafkaProducer[String, GenericRecord](props);
 
-    val converter: Cob2AvroGenericConverter = new Cob2AvroGenericConverter.Builder().cobolComplexType(clazz).
-      schema(schema).build()
+  def toIter (converter: Cob2AvroGenericConverter, bytes: Array[Byte]) : Iterator[GenericRecord] = new AbstractIterator[GenericRecord] {
+    var index = 0
+    def hasNext = index < bytes.length // the twitter stream has no end
 
-    val result: FromHostResult[GenericRecord] = converter.convert(bytes)
-    val record = new ProducerRecord[String, GenericRecord]("topic123", "t", result.getValue)
-    System.out.println("record=" + result.getValue)
-    producer.send(record)
+    def next() = {
+      val result: FromHostResult[GenericRecord] = converter.convert(bytes, index, bytes.length)
+      index+=result.getBytesProcessed
+      result.getValue
+    }
+  };
+
+
+  private def sendFileToKafka(converter: Cob2AvroGenericConverter, bytes: Array[Byte]): Unit ={
+      val result: FromHostResult[GenericRecord] = converter.convert(bytes)
+      val record = new ProducerRecord[String, GenericRecord]("topic123", "t", result.getValue)
+      System.out.println("record=" + result.getValue)
+      producer.send(record)
   }
 
   private def registerAvro(file: File): Schema ={

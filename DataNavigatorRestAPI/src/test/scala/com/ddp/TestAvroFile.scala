@@ -31,10 +31,18 @@ object TestAvroFile extends App {
 
   val jclFactory: JclObjectFactory = JclObjectFactory.getInstance()
   val jcl: JarClassLoader = new JarClassLoader()
-  val datafile = "/home/eguo/workspace/ddp/data/RPWACT.FIXED.END"
-  val cpybookfile = "/home/eguo/workspace/ddp/data/LRPWSACT.cpy"
-  //val datafile = "/home/eguo/workspace/JRecord/SampleFiles/Fujitsu/FujitsuVariableWidthFile.seq"
-  //val cpybookfile = "/home/eguo/workspace/JRecord/SampleFiles/Fujitsu/RBIVCopy.cbl"
+  //val datafile = "/home/cloudera/workspace/ddp/data/sampleFXE.VB.RDW.v3.bin"
+  //val cpybookfile = "/home/cloudera/workspace/ddp/data/ATMCFXE.cpy"
+  val cpybookfile=args(0)
+  val datafile=args(1)
+  //val datafile = "/home/cloudera/workspace/ddp/data/sampleFXS.VB.RDW.v3.bin"
+  //val cpybookfile = "/home/cloudera/workspace/ddp/data/ATMCFXS.cpy"
+
+  //val datafile = "/home/cloudera/workspace/ddp/data/RPWACT.FIXED.END"
+  //val cpybookfile = "/home/cloudera/workspace/ddp/data/LRPWSACT.cpy"
+
+  //val datafile = "/home/cloudera/workspace/JRecord/SampleFiles/Fujitsu/FujitsuVariableWidthFile.seq"
+  //val cpybookfile = "/home/cloudera/workspace/jrecord/Source/JRecord/src/net/sf/JRecord/zTest/Common/CopyBook/Cobol/RBIVCopy.cbl"
 
 
   val pkgPrefix = "com.ddp.user"
@@ -46,11 +54,9 @@ object TestAvroFile extends App {
 
   val byteArray = java.nio.file.Files.readAllBytes(Paths.get(datafile))
 
-  val datafiles = Map("RPWACT.FIXED.END" -> byteArray)
-  gen.generate(new StringReader(cpybook), file, pkgPrefix, "LRPWSACT", null)
+  gen.generate(new StringReader(cpybook), file, pkgPrefix, "avsc", null)
 
   val schema = registerAvro(listAvroFile(file)(0))
-  //CopybookSchemaRegister(jclFactory, jcl, param, cpybook, datafiles).run()
   InlineCompiler.compile(jclFactory, jcl, "", "", recursiveListFiles(file).filter(_.isFile).filter(_.getName.endsWith(".java")).asJava)
   jcl.add(file.getPath + "/java")
   val clazz = jclFactory.create(jcl, pkgPrefix + ".Cobol" + schema.getName).asInstanceOf[CobolComplexType];
@@ -58,11 +64,21 @@ object TestAvroFile extends App {
   val converter: Cob2AvroGenericConverter = new Cob2AvroGenericConverter.Builder().cobolComplexType(clazz).
     schema(schema).build()
 
-  val result: FromHostResult[GenericRecord] = converter.convert(byteArray)
+  //val result: FromHostResult[GenericRecord] = converter.convert(byteArray)
 
-  System.out.print(result.getValue.toString)
+  //System.out.print(result.getValue.toString)
+  toIter(converter, byteArray).foreach(System.out.println)
 
+  def toIter (converter: Cob2AvroGenericConverter, bytes: Array[Byte]) : Iterator[GenericRecord] = new AbstractIterator[GenericRecord] {
+    var index = 0
+    def hasNext = index < bytes.length // the twitter stream has no end
 
+    def next() = {
+      val result: FromHostResult[GenericRecord] = converter.convert(bytes, index, bytes.length)
+      index+=result.getBytesProcessed
+      result.getValue
+    }
+  };
 
   private def recursiveListFiles(f: File): List[File] = {
     val these = f.listFiles.toList
