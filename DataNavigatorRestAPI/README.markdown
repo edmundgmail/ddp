@@ -58,6 +58,12 @@ curl -v -X POST http://localhost:8881/app -H "Content-Type: application/json" -d
 curl -v -X POST http://localhost:8881/app -H "Content-Type: application/json" -d "{ \"userClassName\":\"user.TestApp\"}"
 curl -v -X POST http://localhost:8881/app -H "Content-Type: application/json" -d "{ \"srcHdfsPath\":\"/user/root/TestApp.scala\"}"
 
+
+{"sql":"select * from ATMCFXE_temp_1","conn":"my-spark-app"}
+
+{ "cpyBookName": "ATMCFXE", "cpyBookHdfsPath": "/user/cloudera/ATMCFXE.cpy", "fileStructure":"FixedLength", "binaryFormat": "FMT_MAINFRAME", "splitOptoin": "SplitNone", "dataFileHdfsPath":"/user/cloudera/sampleFXE.VB.RDW.v3.bin", "cpybookFont":"cp037","conn":"my-spark-app" }
+
+
 {"format":"cpybook",
 "cpyBookName": "RPWACT",
 "cpyBookHdfsPath": "/user/root/LRPWSACT.cpy",

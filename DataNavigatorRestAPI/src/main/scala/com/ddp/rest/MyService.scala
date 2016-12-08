@@ -108,12 +108,12 @@ trait MyService extends HttpService with CorsSupport{
         }
       } ~
       path("entity") {
-        post {
+        /*post {
           respondWithStatus(Accepted) {
             entity(as[WorkerInitialize]) { someObject =>
               doInitialize(someObject)
             }}
-        } ~
+        } ~*/
         post {
           respondWithStatus(Created) {
             entity(as[CopybookIngestionParameter]) { someObject =>
