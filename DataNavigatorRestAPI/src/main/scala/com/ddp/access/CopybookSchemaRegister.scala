@@ -63,7 +63,12 @@ case class CopybookSchemaRegister  (jclFactory: JclObjectFactory, jcl : JarClass
       //file.deleteOnExit()
 
       System.out.println("copybook=" + copybook)
+    try{
       gen.generate(new StringReader(copybook), file,  pkgPrefix, param.cpyBookName, null)
+    }
+    catch{
+      case e: Exception=>
+    }
 
      System.out.println("now start dumping files, file path=" + file.getAbsolutePath)
       val files = listAvroFile(file)
@@ -89,7 +94,6 @@ case class CopybookSchemaRegister  (jclFactory: JclObjectFactory, jcl : JarClass
     these ++ these.filter(_.isDirectory).flatMap(recursiveListFiles)
   }
 
-
   def toIter (converter: Cob2AvroGenericConverter, bytes: Array[Byte]) : Iterator[GenericRecord] = new AbstractIterator[GenericRecord] {
     var index = 0
     def hasNext = index < bytes.length // the twitter stream has no end
@@ -101,12 +105,8 @@ case class CopybookSchemaRegister  (jclFactory: JclObjectFactory, jcl : JarClass
     }
   };
 
-
   private def sendFileToKafka(converter: Cob2AvroGenericConverter, bytes: Array[Byte]): Unit ={
-      val result: FromHostResult[GenericRecord] = converter.convert(bytes)
-      val record = new ProducerRecord[String, GenericRecord]("topic123", "t", result.getValue)
-      System.out.println("record=" + result.getValue)
-      producer.send(record)
+      toIter(converter, bytes).map(new ProducerRecord[String, GenericRecord]("topic123", "t", _)).foreach(producer.send)
   }
 
   private def registerAvro(file: File): Schema ={
