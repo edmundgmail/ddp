@@ -17,6 +17,7 @@ import com.legstar.base.converter.FromHostResult
 import com.legstar.cob2xsd.Cob2XsdConfig
 import io.confluent.kafka.schemaregistry.client.CachedSchemaRegistryClient
 import net.sf.JRecord.Common.IFieldDetail
+import net.sf.JRecord.Details.LayoutDetail
 import org.apache.avro.Schema
 import org.apache.avro.generic.GenericRecord
 import org.apache.kafka.clients.producer.{KafkaProducer, ProducerConfig, ProducerRecord}
@@ -31,9 +32,6 @@ import scala.collection.JavaConversions._
 /**
   * Created by cloudera on 11/25/16.
   */
-
-case class MyFieldDetail(name:String)
-
 
 
 case class CopybookPreview(jclFactory: JclObjectFactory, jcl : JarClassLoader, param: CopybookSchemaRegisterParameter, copybook:String, datafiles: Map[String, Array[Byte]]) extends UserClassRunner {
@@ -55,10 +53,10 @@ case class CopybookPreview(jclFactory: JclObjectFactory, jcl : JarClassLoader, p
 
 
 
-  override def run() : Iterable[IFieldDetail] = {
+  override def run() : LayoutDetail = {
     val externalRecord = CopybookHelper.getExternalRecordGivenCopybook(param.cpyBookName, copybook, "Split01Level", "FMT_MAINFRAME", "cp037")
 
-    collectionAsScalaIterable(externalRecord.asLayoutDetail.getFieldNameMap.values)
+    externalRecord.asLayoutDetail
       //.foreach(field=>System.out.print("fieldname=" + field.getLookupName + ", type=" + field.getType))
       //System.out.print("fieldname=" + field.getCobolName + ", type=" + field.getType)
 

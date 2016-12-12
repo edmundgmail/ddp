@@ -9,7 +9,7 @@ import java.io._
 import java.util
 
 import spray.httpx.SprayJsonSupport._
-import com.ddp.cpybook.{CopybookPreview, CopybookSchemaRegister, MyFieldDetail}
+import com.ddp.cpybook.{CopybookPreview, CopybookSchemaRegister}
 import com.ddp.jdbc.{DataSourceConnection, FieldHierarchy}
 import org.apache.hadoop
 import org.apache.hadoop.conf.Configuration
@@ -17,6 +17,7 @@ import org.apache.hadoop.fs.{FileSystem, Path}
 import com.typesafe.config.ConfigFactory
 import com.ddp.utils.Utils
 import net.sf.JRecord.Common.{FieldDetail, IFieldDetail}
+import net.sf.JRecord.Details.LayoutDetail
 import org.xeustechnologies.jcl.{JarClassLoader, JclObjectFactory}
 import spray.json.{JsObject, JsString, RootJsonFormat}
 
@@ -42,7 +43,24 @@ import spray.json.DefaultJsonProtocol._
 
 object copybookSchemaRegisterJsonProtocol extends DefaultJsonProtocol {
   implicit val copybookSchemaRegisterParameterFormat = jsonFormat1(CopybookSchemaRegisterParameter)
-  implicit val fieldDetailFormat = jsonFormat1(MyFieldDetail)
+
+  implicit object FieldDetailFormat extends RootJsonFormat[IFieldDetail] {
+    def write(f: IFieldDetail) = JsObject(Map(
+      "name" -> JsString(f.getName),
+      "type" -> JsNumber(f.getType)
+    ))
+    def read(value: JsValue): IFieldDetail = ???
+  }
+
+
+  implicit object LayoutDetailFormat extends RootJsonFormat[LayoutDetail] {
+    def write(layout: LayoutDetail) = JsObject(Map(
+      "name" -> JsString(layout.getLayoutName),
+      "fields" -> JsArray(layout.getFieldNameMap.values().map(_.toJson).toList)
+    ))
+    def read(value: JsValue): LayoutDetail = ???
+  }
+
 }
 
 
@@ -78,12 +96,11 @@ trait CopybookSchemaRegisterService extends Directives {
               val cpybook = new String(details.get("cpybook").get.asInstanceOf[Array[Byte]])
               val datafiles = details.filterKeys(key => (!key.equals("param") && !key.equals("cpybook"))).mapValues(_.asInstanceOf[Array[Byte]])
 
-              val s = CopybookPreview(jclFactory, jcl, param, cpybook, datafiles).run
-              val x = s.toList.map(f=>MyFieldDetail(f.getName))
+              val layOutDetail = CopybookPreview(jclFactory, jcl, param, cpybook, datafiles).run
               //val x = s.asInstanceOf[List[IFieldDetail]].map(f=>MyFieldDetail(f.getName))
 
-              System.out.println("s.class=" + s.getClass + "x.class=" + x.getClass )
-              JsArray(s.map(f=>MyFieldDetail(f.getName).toJson).toList).toString()
+              //System.out.println("s.class=" + s.getClass + "x.class=" + x.getClass )
+              layOutDetail
               }
           }
         }
