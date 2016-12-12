@@ -7,7 +7,7 @@ package com.ddp
 import java.io.{ByteArrayInputStream, File, FileInputStream, StringReader}
 import java.nio.file.{Path, Paths}
 
-import com.ddp.access.CopybookSchemaRegister
+import com.ddp.cpybook.CopybookSchemaRegister
 import com.ddp.jarmanager.InlineCompiler
 import com.ddp.rest.CopybookSchemaRegisterParameter
 import com.google.common.io.Files

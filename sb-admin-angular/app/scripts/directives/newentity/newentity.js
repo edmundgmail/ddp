@@ -57,7 +57,7 @@ angular.module('sbAdminApp')
                   transformRequest: angular.identity,
                   headers: {'Content-Type': undefined }})
               .success(function(response){
-                 alert('success');
+                 alert('response');
                 }).error(function(){
                   alert('error');            
                 });

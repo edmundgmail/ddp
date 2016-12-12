@@ -6,7 +6,7 @@ import java.nio.file.{Files, Paths}
 import org.apache.log4j
 import akka.actor.{Actor, ActorLogging, Props}
 import akka.util.{ByteString, Timeout}
-import com.ddp.access.CopybookIngestion
+import com.ddp.cpybook.CopybookIngestion
 import org.apache.hadoop
 import org.apache.spark.sql.{DataFrame, SQLContext, SparkSession}
 import org.apache.spark.{SparkConf, SparkContext}

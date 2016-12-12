@@ -1,15 +1,11 @@
-package com.ddp.access
+package com.ddp.cpybook
 
-import com.ddp.cpybook.Constants
-import org.apache.hadoop
-import org.apache.spark.sql.{SQLContext, SparkSession}
-import com.ddp.cpybook._
+import com.ddp.access.UserClassRunner
 import com.ddp.rest.CopybookIngestionParameter
 import com.ddp.rest.WorkerActor.Ok
 import com.typesafe.config.Config
-
-import scala.concurrent.ExecutionContext.Implicits.global
-import scala.concurrent.Future
+import org.apache.hadoop
+import org.apache.spark.sql.SparkSession
 
 /**
   * Created by cloudera on 9/3/16.

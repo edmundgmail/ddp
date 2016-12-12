@@ -1,6 +1,7 @@
 package com.ddp.cpybook
 
-import java.io.BufferedInputStream
+import java.io.{BufferedInputStream, ByteArrayInputStream}
+import java.nio.charset.StandardCharsets
 
 import net.sf.JRecord.External.{CobolCopybookLoader, ExternalRecord}
 import org.apache.hadoop.conf.Configuration
@@ -13,6 +14,18 @@ import scala.util.Try
   * Created by cloudera on 8/30/16.
   */
 object CopybookHelper {
+  val copybookInt = new CobolCopybookLoader ()
+
+  def getExternalRecordGivenCopybook(cbName : String, copybook : String, cbSplitOption : String, cbBinaryFormat: String, cbFont : String) : ExternalRecord = {
+    val intCbSplitOptoin = Try(Constants.CopybookSplitOptionValues withName cbSplitOption).get.id
+    val intCbBinaryFormat = Try(Constants.CopybookBinaryformatValues withName cbBinaryFormat).get.id
+
+    val externalRecord = copybookInt
+      .loadCopyBook(new ByteArrayInputStream(copybook.getBytes(StandardCharsets.UTF_8)), cbName, intCbSplitOptoin, 0,
+        cbFont, intCbBinaryFormat, 0, null)
+    externalRecord
+  }
+
   def getExternalRecord(config: Configuration) : ExternalRecord = {
 
     val cbName = config.get(Constants.CopybookName)
@@ -24,7 +37,7 @@ object CopybookHelper {
 
     val inputStream = new BufferedInputStream (fs.open (new Path ( cblPath) ) )
 
-    val copybookInt = new CobolCopybookLoader ()
+
 
     try {
       val externalRecord = copybookInt
