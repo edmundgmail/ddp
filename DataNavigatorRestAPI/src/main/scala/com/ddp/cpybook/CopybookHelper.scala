@@ -16,14 +16,14 @@ import scala.util.Try
 object CopybookHelper {
   val copybookInt = new CobolCopybookLoader ()
 
-  def getExternalRecordGivenCopybook(cbName : String, copybook : String, cbSplitOption : String, cbBinaryFormat: String, cbFont : String) : ExternalRecord = {
+  def getExternalRecordGivenCopybook(cbName : String, copybook : String, cbSplitOption : String, cbBinaryFormat: String, cbFileStructure:String, cbFont : String) : ExternalRecord = {
     val intCbSplitOptoin = Try(Constants.CopybookSplitOptionValues withName cbSplitOption).get.id
     val intCbBinaryFormat = Try(Constants.CopybookBinaryformatValues withName cbBinaryFormat).get.id
-
+    val intCbFileStructure = Try(Constants.CopybookFileStructureValues withName cbFileStructure).get.id
     val externalRecord = copybookInt
       .loadCopyBook(new ByteArrayInputStream(copybook.getBytes(StandardCharsets.UTF_8)), cbName, intCbSplitOptoin, 0,
         cbFont, intCbBinaryFormat, 0, null)
-    externalRecord
+    externalRecord.setFileStructure(intCbFileStructure)
   }
 
   def getExternalRecord(config: Configuration) : ExternalRecord = {
@@ -32,6 +32,7 @@ object CopybookHelper {
     val cblPath = config.get (Constants.CopybookHdfsPath)
     val cbSplitOptoin = Try(Constants.CopybookSplitOptionValues withName config.get(Constants.CopybookSplitOpiton)).get.id
     val cbBinaryFormat = Try(Constants.CopybookBinaryformatValues withName config.get(Constants.CopybookBinaryformat)).get.id
+    val cbFileStructure = Try(Constants.CopybookFileStructureValues withName config.get(Constants.CopybookFileStructure)).get.id
     val cbFont = config.get(Constants.CopybookFont)
     val fs = FileSystem.get (config)
 
@@ -43,7 +44,7 @@ object CopybookHelper {
       val externalRecord = copybookInt
         .loadCopyBook(inputStream, cbName, cbSplitOptoin, 0,
           cbFont, cbBinaryFormat, 0, null)
-      externalRecord
+      externalRecord.setFileStructure(cbFileStructure)
     }
     catch{
       case e: Exception => {e.printStackTrace(); null}

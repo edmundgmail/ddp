@@ -16,8 +16,10 @@ import com.legstar.base.`type`.composite.CobolComplexType
 import com.legstar.base.converter.FromHostResult
 import com.legstar.cob2xsd.Cob2XsdConfig
 import io.confluent.kafka.schemaregistry.client.CachedSchemaRegistryClient
-import net.sf.JRecord.Common.IFieldDetail
-import net.sf.JRecord.Details.LayoutDetail
+import net.sf.JRecord.Common.{BasicFileSchema, IFieldDetail}
+import net.sf.JRecord.Details.{AbstractLine, LayoutDetail}
+import net.sf.JRecord.External.ExternalRecord
+import net.sf.JRecord.IO.{AbstractLineReader, LineIOProvider}
 import org.apache.avro.Schema
 import org.apache.avro.generic.GenericRecord
 import org.apache.kafka.clients.producer.{KafkaProducer, ProducerConfig, ProducerRecord}
@@ -27,20 +29,16 @@ import spray.json.{DefaultJsonProtocol, JsArray, JsNumber, JsObject, JsString, J
 
 import scala.collection.AbstractIterator
 import scala.collection.JavaConversions._
+import scala.util.Try
 
 
 /**
   * Created by cloudera on 11/25/16.
   */
+case class CopybookPreview(param: CopybookSchemaRegisterParameter, copybook:String) extends UserClassRunner {
 
-
-case class CopybookPreview(jclFactory: JclObjectFactory, jcl : JarClassLoader, param: CopybookSchemaRegisterParameter, copybook:String, datafiles: Map[String, Array[Byte]]) extends UserClassRunner {
-  val diagnostics: DiagnosticCollector[JavaFileObject] = new DiagnosticCollector[JavaFileObject]
-  val compiler: JavaCompiler = ToolProvider.getSystemJavaCompiler
-  val fileManager: StandardJavaFileManager = compiler.getStandardFileManager(diagnostics, null, null)
-
-  val pkgPrefix = "com.ddp.user"
-
+  var externalRecord : ExternalRecord = null
+  var lr: AbstractLineReader = null
 
   val producer = {
     val props = new Properties()
@@ -52,48 +50,35 @@ case class CopybookPreview(jclFactory: JclObjectFactory, jcl : JarClassLoader, p
   }
 
 
-
   override def run() : LayoutDetail = {
-    val externalRecord = CopybookHelper.getExternalRecordGivenCopybook(param.cpyBookName, copybook, "Split01Level", "FMT_MAINFRAME", "cp037")
-
+    externalRecord = CopybookHelper.getExternalRecordGivenCopybook(param.cpyBookName, copybook, param.copybookSplitLevel, param.copybookFileStructure, param.copybookBinaryFormat, param.copybookFont)
     externalRecord.asLayoutDetail
-      //.foreach(field=>System.out.print("fieldname=" + field.getLookupName + ", type=" + field.getType))
-      //System.out.print("fieldname=" + field.getCobolName + ", type=" + field.getType)
-
  }
 
+  def load(datafiles : Map[String, Array[Byte]]) = {
 
-  private def recursiveListFiles(f: File): List[File] = {
-    val these = f.listFiles.toList
-    these ++ these.filter(_.isDirectory).flatMap(recursiveListFiles)
+    val r = LineIOProvider.getInstance.getLineReader(externalRecord.asLayoutDetail)
+    datafiles.foreach{case (_,v) => ProcessFile(r, v)}
   }
 
-  def toIter (converter: Cob2AvroGenericConverter, bytes: Array[Byte]) : Iterator[GenericRecord] = new AbstractIterator[GenericRecord] {
-    var index = 0
-    def hasNext = index < bytes.length // the twitter stream has no end
 
-    def next() = {
-      val result: FromHostResult[GenericRecord] = converter.convert(bytes, index, bytes.length)
-      index+=result.getBytesProcessed
-      result.getValue
-    }
-  };
 
-  private def sendFileToKafka(converter: Cob2AvroGenericConverter, bytes: Array[Byte]): Unit ={
-      toIter(converter, bytes).map(new ProducerRecord[String, GenericRecord]("topic123", "t", _)).foreach(producer.send)
+  private def ProcessFile(abstractLineReader: AbstractLineReader, bytes: Array[Byte]): Unit = {
+    abstractLineReader.open(new ByteArrayInputStream(bytes), externalRecord.asLayoutDetail())
+    val AbstractLine = abstractLineReader.read()
   }
 
-  private def registerAvro(file: File): Schema ={
-    System.out.println("now registering")
-    val client = new CachedSchemaRegistryClient("http://localhost:8081", 1000)
-    val schema: Schema = new Schema.Parser().parse(file)
 
-    client.register("topic123", schema)
-    return schema
-  }
+    def toIter (abstractLineReader: AbstractLineReader,bytes: Array[Byte]) : Iterator[GenericRecord] = new AbstractIterator[GenericRecord] {
+      var index = 0
+      def hasNext = index < bytes.length // the twitter stream has no end
 
-  private def listAvroFile(file: File): Array[File] = {
-    file.listFiles.filter(f=>f.isDirectory && f.getName.equals("avsc")).flatMap(_.listFiles)
-  }
+      def next() = {
+        val abstractLine = abstractLineReader.read()
+        index+=abstractLine.getData.length
+        null
+      }
+    };
+
 
   }

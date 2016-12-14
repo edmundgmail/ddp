@@ -31,6 +31,13 @@ angular.module('sbAdminApp')
         $scope.copybookFile=null;
         $scope.copybookDataFile=[];
 
+        $scope.CopybookLayoutDetail = null;
+
+        $scope.CopybookSplitLevels = [ {'id': 0,'name':'No Split'}, {'id': 1, 'name':'On Redefine'}, {'id': 2,'name':'On 01 Level'},{'id': 3,'name':'On Highest Repeating'}];
+        $scope.CopybookFileStructure = [{'id': 2, 'name':'Fixed Length'}];
+        $scope.CopybookBnaryFormat = [{'id': 1, 'name':'Mainframe'}];
+        $scope.CopybookFont = ['cp037'];
+
         $scope.setCopybookFile = function(element){
           $scope.copybookFile = element.files[0];
         };
@@ -42,14 +49,18 @@ angular.module('sbAdminApp')
 
         $scope.PreviewCopybookFile = function(){
               var formData = new FormData(); 
-
+            alert($scope.selectCopybookSplitLevel.name);
+            alert($scope.selectCopybookFileStructure.name);
+            alert($scope.selectCopybookBinaryFormat.name);
+            alert($scope.selectCopybookFont);
+            
               var param = {
                 'cpyBookName' : $scope.copybookFile.name
               };
 
               formData.append('param', angular.toJson(param));  
               formData.append('cpybook', $scope.copybookFile);
-              angular.forEach($scope.copybookDataFile, function(file){ formData.append(file.name, file)});
+              //angular.forEach($scope.copybookDataFile, function(file){ formData.append(file.name, file)});
               //formData.append('datafile', $scope.copybookDataFile);
           
                 $http.post($rootScope.url+'/ingestion', formData, {
@@ -57,7 +68,9 @@ angular.module('sbAdminApp')
                   transformRequest: angular.identity,
                   headers: {'Content-Type': undefined }})
               .success(function(response){
-                 alert('response');
+                 $scope.CopybookLayoutDetail = response;
+                  alert(response);
+
                 }).error(function(){
                   alert('error');            
                 });

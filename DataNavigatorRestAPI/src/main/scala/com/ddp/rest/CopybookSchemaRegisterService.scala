@@ -34,15 +34,17 @@ import Directives._
 import scala.collection.JavaConversions._
 
 case class CopybookSchemaRegisterParameter(
-                                            cpyBookName : String
-                                          )
+  cpyBookName : String,
+  copybookSplitLevel : String = "Split01Level" ,
+  copybookFileStructure : String = "FixedLength",
+  copybookBinaryFormat: String = "FMT_MAINFRAME",
+  copybookFont : String = "cp037"
+)
 
 import spray.json.DefaultJsonProtocol
-import spray.json.DefaultJsonProtocol._
-
 
 object copybookSchemaRegisterJsonProtocol extends DefaultJsonProtocol {
-  implicit val copybookSchemaRegisterParameterFormat = jsonFormat1(CopybookSchemaRegisterParameter)
+  implicit val copybookSchemaRegisterParameterFormat = jsonFormat5(CopybookSchemaRegisterParameter)
 
   implicit object FieldDetailFormat extends RootJsonFormat[IFieldDetail] {
     def write(f: IFieldDetail) = JsObject(Map(
@@ -70,8 +72,10 @@ trait CopybookSchemaRegisterService extends Directives {
 
   private val config = ConfigFactory.load()
 
-  val jclFactory: JclObjectFactory = JclObjectFactory.getInstance()
-  val jcl: JarClassLoader = new JarClassLoader()
+  //val jclFactory: JclObjectFactory = JclObjectFactory.getInstance()
+  //val jcl: JarClassLoader = new JarClassLoader()
+
+  var copyBookPreview : CopybookPreview = null
 
   val copybookSchemaRegisterRoute: Route = {
     path("ingestion") {
@@ -94,18 +98,41 @@ trait CopybookSchemaRegisterService extends Directives {
               } toMap
               val param = details.get("param").get.asInstanceOf[CopybookSchemaRegisterParameter]
               val cpybook = new String(details.get("cpybook").get.asInstanceOf[Array[Byte]])
-              val datafiles = details.filterKeys(key => (!key.equals("param") && !key.equals("cpybook"))).mapValues(_.asInstanceOf[Array[Byte]])
+              //val datafiles = details.filterKeys(key => (!key.equals("param") && !key.equals("cpybook"))).mapValues(_.asInstanceOf[Array[Byte]])
 
-              val layOutDetail = CopybookPreview(jclFactory, jcl, param, cpybook, datafiles).run
+              copyBookPreview = CopybookPreview(param, cpybook)
               //val x = s.asInstanceOf[List[IFieldDetail]].map(f=>MyFieldDetail(f.getName))
 
               //System.out.println("s.class=" + s.getClass + "x.class=" + x.getClass )
-              layOutDetail
+              copyBookPreview.run
               }
           }
         }
       }
-    }
+    } ~
+      path("ingestionData") {
+        post {
+          respondWithMediaType(`application/json`) {
+            entity(as[MultipartFormData]) { formData =>
+              complete {
+                val details = formData.fields.map {
+                  case BodyPart(entity, headers) =>
+                    //val key = headers.find(h => h.is("content-disposition")).get.value.split(";").map(_.trim).filter(_.startsWith("name="))(0).split("name=").last
+                    val key = headers(0).value.split(";").map(_.trim).find(_.startsWith("name=")).get.substring(5)
+                    key -> entity.data.toByteArray
+                } toMap
+                val datafiles = details.mapValues(_.asInstanceOf[Array[Byte]])
+
+                val dataDetail = copyBookPreview.load(datafiles)
+                //val x = s.asInstanceOf[List[IFieldDetail]].map(f=>MyFieldDetail(f.getName))
+
+                //System.out.println("s.class=" + s.getClass + "x.class=" + x.getClass )
+                s"dataDetail"
+              }
+            }
+          }
+        }
+      }
 
   }
 }
