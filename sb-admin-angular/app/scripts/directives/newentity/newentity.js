@@ -33,9 +33,9 @@ angular.module('sbAdminApp')
 
         $scope.CopybookLayoutDetail = null;
 
-        $scope.CopybookSplitLevels = [ {'id': 0,'name':'No Split'}, {'id': 1, 'name':'On Redefine'}, {'id': 2,'name':'On 01 Level'},{'id': 3,'name':'On Highest Repeating'}];
-        $scope.CopybookFileStructure = [{'id': 2, 'name':'Fixed Length'}];
-        $scope.CopybookBnaryFormat = [{'id': 1, 'name':'Mainframe'}];
+        $scope.CopybookSplitLevels = [ {'id': 0,'name':'SplitNone'}, {'id': 1, 'name':'SplitRedefine'}, {'id': 2,'name':'Split01Level'},{'id': 3,'name':'SplitHighestRepeating'}];
+        $scope.CopybookFileStructure = [{'id': 2, 'name':'FixedLength'}];
+        $scope.CopybookBnaryFormat = [{'id': 1, 'name':'FMT_MAINFRAME'}];
         $scope.CopybookFont = ['cp037'];
 
         $scope.setCopybookFile = function(element){
@@ -49,13 +49,13 @@ angular.module('sbAdminApp')
 
         $scope.PreviewCopybookFile = function(){
               var formData = new FormData(); 
-            alert($scope.selectCopybookSplitLevel.name);
-            alert($scope.selectCopybookFileStructure.name);
-            alert($scope.selectCopybookBinaryFormat.name);
-            alert($scope.selectCopybookFont);
-            
+
               var param = {
-                'cpyBookName' : $scope.copybookFile.name
+                'cpyBookName' : $scope.copybookFile.name,
+                'copybookSplitLevel' : $scope.selectCopybookSplitLevel.name,
+                'copybookFileStructure' : $scope.selectCopybookFileStructure.name,
+                'copybookBinaryFormat' : $scope.selectCopybookBinaryFormat.name,
+                'copybookFont' : $scope.selectCopybookFont
               };
 
               formData.append('param', angular.toJson(param));  

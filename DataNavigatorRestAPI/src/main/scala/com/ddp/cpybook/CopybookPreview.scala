@@ -72,9 +72,9 @@ case class CopybookPreview(param: CopybookSchemaRegisterParameter, copybook:Stri
     }
 
   override def run() : LayoutDetail = {
-    externalRecord = CopybookHelper.getExternalRecordGivenCopybook(param.cpyBookName, copybook, param.copybookSplitLevel, param.copybookFileStructure, param.copybookBinaryFormat, param.copybookFont)
+    externalRecord = CopybookHelper.getExternalRecordGivenCopybook(param.cpyBookName, copybook, param.copybookSplitLevel,param.copybookBinaryFormat, param.copybookFileStructure,  param.copybookFont)
 
-    val valueMembersA = externalRecord.asLayoutDetail().getFieldNameMap.values.toList.filter(_.getType==0).map(f=>FieldData(f.getName, getType(f.getType)))
+    val valueMembersA = externalRecord.asLayoutDetail().getFieldNameMap.values.toList.map(f=>FieldData(f.getName, getType(f.getType)))
 
     System.out.println("valueMembersA = " + valueMembersA)
 
