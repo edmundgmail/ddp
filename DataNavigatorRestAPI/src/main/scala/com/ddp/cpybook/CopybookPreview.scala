@@ -23,6 +23,7 @@ import net.sf.JRecord.IO.{AbstractLineReader, LineIOProvider}
 import org.apache.avro.Schema
 import org.apache.avro.generic.GenericRecord
 import org.apache.kafka.clients.producer.{KafkaProducer, ProducerConfig, ProducerRecord}
+import org.codehaus.janino.Java
 import org.json4s.{DefaultFormats, Formats}
 import org.xeustechnologies.jcl.{JarClassLoader, JclObjectFactory}
 import spray.json.{DefaultJsonProtocol, JsArray, JsNumber, JsObject, JsString, JsValue, RootJsonFormat}
@@ -35,10 +36,18 @@ import scala.util.Try
 /**
   * Created by cloudera on 11/25/16.
   */
+
+import com.julianpeeters.caseclass.generator._
+import scala.reflect.runtime.universe._
+
+import net.sf.JRecord.Types.TypeManager
+
 case class CopybookPreview(param: CopybookSchemaRegisterParameter, copybook:String) extends UserClassRunner {
 
   var externalRecord : ExternalRecord = null
   var lr: AbstractLineReader = null
+  var dcc : DynamicCaseClass = null
+  val tm = TypeManager.getSystemTypeManager()
 
   val producer = {
     val props = new Properties()
@@ -49,9 +58,29 @@ case class CopybookPreview(param: CopybookSchemaRegisterParameter, copybook:Stri
     new KafkaProducer[String, GenericRecord](props)
   }
 
+  def getType(t:Int) : Type =
+    if(tm.getType(t).isNumeric) {
+      t match {
+        case 4 | 15 => typeOf[Int]
+        case _ => typeOf[Double]
+      }
+    }else if(tm.getType(t).isBinary) {
+        typeOf[Array[Byte]]
+    }
+    else {
+      typeOf[String]
+    }
 
   override def run() : LayoutDetail = {
     externalRecord = CopybookHelper.getExternalRecordGivenCopybook(param.cpyBookName, copybook, param.copybookSplitLevel, param.copybookFileStructure, param.copybookBinaryFormat, param.copybookFont)
+
+    val valueMembersA = externalRecord.asLayoutDetail().getFieldNameMap.values.toList.filter(_.getType==0).map(f=>FieldData(f.getName, getType(f.getType)))
+
+    System.out.println("valueMembersA = " + valueMembersA)
+
+    val classDataA = ClassData(ClassNamespace(Some("models")), ClassName("MyRecord_UserDefinedRefSpecA"), ClassFieldData(valueMembersA))
+    dcc = DynamicCaseClass(classDataA)
+
     externalRecord.asLayoutDetail
  }
 
@@ -78,7 +107,6 @@ case class CopybookPreview(param: CopybookSchemaRegisterParameter, copybook:Stri
         index+=abstractLine.getData.length
         null
       }
-    };
-
+    }
 
   }

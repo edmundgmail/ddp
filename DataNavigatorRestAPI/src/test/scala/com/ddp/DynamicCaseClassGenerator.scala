@@ -6,11 +6,10 @@ package com.ddp
 
 import com.julianpeeters.caseclass.generator._
 import scala.reflect.runtime.universe._
-import org.objectweb.asm.AnnotationVisitor
 
-object TestFileCompiler extends App{
+object DynamicCaseClassGenerator extends App{
         val valueMembersA: List[FieldData] = List(FieldData("i", typeOf[Int]))
-        val classDataA = new ClassData(ClassNamespace(Some("models")), ClassName("MyRecord_UserDefinedRefSpecA"), ClassFieldData(valueMembersA))
+        val classDataA = ClassData(ClassNamespace(Some("models")), ClassName("MyRecord_UserDefinedRefSpecA"), ClassFieldData(valueMembersA))
         val dccA = DynamicCaseClass(classDataA)
         val typeTemplateA = dccA.newInstance(1)
 
