@@ -119,11 +119,16 @@ trait CopybookSchemaRegisterService extends Directives {
                   case BodyPart(entity, headers) =>
                     //val key = headers.find(h => h.is("content-disposition")).get.value.split(";").map(_.trim).filter(_.startsWith("name="))(0).split("name=").last
                     val key = headers(0).value.split(";").map(_.trim).find(_.startsWith("name=")).get.substring(5)
+                    if(key.equals("types"))
+                      key -> entity.asString
+                    else
                     key -> entity.data.toByteArray
                 } toMap
-                val datafiles = details.mapValues(_.asInstanceOf[Array[Byte]])
 
-                val dataDetail = copyBookPreview.load(datafiles)
+                val types = details.get("types").toString.split(",")
+                val datafiles = details.filterKeys(!_.equals("types")).mapValues(_.asInstanceOf[Array[Byte]])
+
+                val dataDetail = copyBookPreview.load(datafiles, types)
                 //val x = s.asInstanceOf[List[IFieldDetail]].map(f=>MyFieldDetail(f.getName))
 
                 //System.out.println("s.class=" + s.getClass + "x.class=" + x.getClass )

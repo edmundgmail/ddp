@@ -61,8 +61,8 @@ case class CopybookPreview(param: CopybookSchemaRegisterParameter, copybook:Stri
   def getType(t:Int) : Type =
     if(tm.getType(t).isNumeric) {
       t match {
-        case 4 | 15 => typeOf[Int]
-        case _ => typeOf[Double]
+        case 4 | 15 => typeOf[String]
+        case _ => typeOf[String]
       }
     }else if(tm.getType(t).isBinary) {
         typeOf[Array[Byte]]
@@ -74,17 +74,18 @@ case class CopybookPreview(param: CopybookSchemaRegisterParameter, copybook:Stri
   override def run() : LayoutDetail = {
     externalRecord = CopybookHelper.getExternalRecordGivenCopybook(param.cpyBookName, copybook, param.copybookSplitLevel,param.copybookBinaryFormat, param.copybookFileStructure,  param.copybookFont)
 
-    val valueMembersA = externalRecord.asLayoutDetail().getFieldNameMap.values.toList.map(f=>FieldData(f.getName, getType(f.getType)))
+    externalRecord.asLayoutDetail
+ }
+
+  def load(datafiles : Map[String, Array[Byte]], types: Array[String]) = {
+
+    val overrideTypes = types.map(_=>typeOf[String])
+    val valueMembersA = (externalRecord.asLayoutDetail().getFieldNameMap.values.toList zip overrideTypes).map(f=>FieldData(f._1.getName, f._2))
 
     System.out.println("valueMembersA = " + valueMembersA)
 
     val classDataA = ClassData(ClassNamespace(Some("models")), ClassName("MyRecord_UserDefinedRefSpecA"), ClassFieldData(valueMembersA))
     dcc = DynamicCaseClass(classDataA)
-
-    externalRecord.asLayoutDetail
- }
-
-  def load(datafiles : Map[String, Array[Byte]]) = {
 
     val r = LineIOProvider.getInstance.getLineReader(externalRecord.asLayoutDetail)
     datafiles.foreach{case (_,v) => ProcessFile(r, v)}
@@ -94,18 +95,20 @@ case class CopybookPreview(param: CopybookSchemaRegisterParameter, copybook:Stri
 
   private def ProcessFile(abstractLineReader: AbstractLineReader, bytes: Array[Byte]): Unit = {
     abstractLineReader.open(new ByteArrayInputStream(bytes), externalRecord.asLayoutDetail())
-    val AbstractLine = abstractLineReader.read()
+    System.out.println("result=" + toIter(abstractLineReader,bytes).next())
   }
 
 
-    def toIter (abstractLineReader: AbstractLineReader,bytes: Array[Byte]) : Iterator[GenericRecord] = new AbstractIterator[GenericRecord] {
+    def toIter (abstractLineReader: AbstractLineReader,bytes: Array[Byte]) : Iterator[Any] = new AbstractIterator[Any] {
       var index = 0
-      def hasNext = index < bytes.length // the twitter stream has no end
+      def hasNext = index < bytes.length
 
       def next() = {
         val abstractLine = abstractLineReader.read()
         index+=abstractLine.getData.length
-        null
+        val param = externalRecord.asLayoutDetail().getFieldNameMap.values.toList.map(f=>abstractLine.getFieldValue(f))
+        System.out.println("param=" + param)
+        dcc.newInstance(param:_*)
       }
     }
 

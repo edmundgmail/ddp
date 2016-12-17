@@ -46,6 +46,22 @@ angular.module('sbAdminApp')
           angular.forEach(element.files, function(file){$scope.copybookDataFile.push(file);});
         };
 
+        $scope.PreviewCopybookDataFile = function(){
+          var formData = new FormData(); 
+          formData.append('types', 'String,String,String,String,String');
+
+              angular.forEach($scope.copybookDataFile, function(file){ formData.append(file.name, file)});
+                $http.post($rootScope.url+'/ingestionData', formData, {
+                  withCredentials: false,
+                  transformRequest: angular.identity,
+                  headers: {'Content-Type': undefined }})
+              .success(function(response){
+                  alert(response);
+                }).error(function(){
+                  alert('error');            
+                });
+
+        };
 
         $scope.PreviewCopybookFile = function(){
               var formData = new FormData(); 
