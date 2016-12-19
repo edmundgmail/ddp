@@ -37,6 +37,7 @@ angular.module('sbAdminApp')
         $scope.CopybookFileStructure = [{'id': 2, 'name':'FixedLength'}];
         $scope.CopybookBnaryFormat = [{'id': 1, 'name':'FMT_MAINFRAME'}];
         $scope.CopybookFont = ['cp037'];
+        $scope.ScalaDataType=['String' ,'Int','Long','Boolean','Double','Float','Hex', 'BigDecimal','BigInteger'];
 
         $scope.setCopybookFile = function(element){
           $scope.copybookFile = element.files[0];

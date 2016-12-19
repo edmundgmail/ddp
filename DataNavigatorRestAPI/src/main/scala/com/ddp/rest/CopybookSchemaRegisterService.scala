@@ -132,7 +132,7 @@ trait CopybookSchemaRegisterService extends Directives {
                 //val x = s.asInstanceOf[List[IFieldDetail]].map(f=>MyFieldDetail(f.getName))
 
                 //System.out.println("s.class=" + s.getClass + "x.class=" + x.getClass )
-                s"dataDetail"
+                dataDetail
               }
             }
           }

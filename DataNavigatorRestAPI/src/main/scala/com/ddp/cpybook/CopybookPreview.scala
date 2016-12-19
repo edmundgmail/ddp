@@ -88,25 +88,27 @@ case class CopybookPreview(param: CopybookSchemaRegisterParameter, copybook:Stri
     dcc = DynamicCaseClass(classDataA)
 
     val r = LineIOProvider.getInstance.getLineReader(externalRecord.asLayoutDetail)
-    datafiles.foreach{case (_,v) => ProcessFile(r, v)}
+    datafiles.values.map(f=>ProcessFile(r,f)).foldLeft(Iterator[Any]())(_ ++ _)
+
+    "[{'a':1},{'a':2}]"
   }
 
 
 
-  private def ProcessFile(abstractLineReader: AbstractLineReader, bytes: Array[Byte]): Unit = {
+  private def ProcessFile(abstractLineReader: AbstractLineReader, bytes: Array[Byte]): Iterator[Any]  = {
     abstractLineReader.open(new ByteArrayInputStream(bytes), externalRecord.asLayoutDetail())
-    System.out.println("result=" + toIter(abstractLineReader,bytes).next())
+    toIter(abstractLineReader,bytes.length)
   }
 
 
-    def toIter (abstractLineReader: AbstractLineReader,bytes: Array[Byte]) : Iterator[Any] = new AbstractIterator[Any] {
+    def toIter (abstractLineReader: AbstractLineReader,bytesLength: Integer) : Iterator[Any] = new AbstractIterator[Any] {
       var index = 0
-      def hasNext = index < bytes.length
+      def hasNext = index < bytesLength
 
       def next() = {
         val abstractLine = abstractLineReader.read()
         index+=abstractLine.getData.length
-        val param = externalRecord.asLayoutDetail().getFieldNameMap.values.toList.map(f=>abstractLine.getFieldValue(f))
+        val param = externalRecord.asLayoutDetail().getFieldNameMap.values.toList.map(f=>abstractLine.getFieldValue(f).asString)
         System.out.println("param=" + param)
         dcc.newInstance(param:_*)
       }

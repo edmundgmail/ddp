@@ -46,11 +46,16 @@
  <thead>
   <tr>
    <th ng-repeat="(header, value) in CopybookLayoutDetail.fields[0]">{{header}}</th>
+   <th>Type Conversion</th>
   </tr>
  </thead>
  <tbody>
   <tr ng-repeat="row in CopybookLayoutDetail.fields | filter:searchText">
    <td ng-repeat="cell in row">{{cell}}</td>
+  <td>
+
+                <!-- Split button -->
+                <select ng-model="selectCopybookBinaryFormat"  class="form-control" ng-options="x.name for x in CopybookBnaryFormat"></select>
   </tr>
  </tbody>
 </table>
