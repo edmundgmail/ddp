@@ -125,7 +125,9 @@ trait CopybookSchemaRegisterService extends Directives {
                     key -> entity.data.toByteArray
                 } toMap
 
+                System.out.println("types=" +details.get("types"))
                 val types = details.get("types").toString.split(",")
+
                 val datafiles = details.filterKeys(!_.equals("types")).mapValues(_.asInstanceOf[Array[Byte]])
 
                 val dataDetail = copyBookPreview.load(datafiles, types)

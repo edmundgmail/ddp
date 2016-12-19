@@ -37,17 +37,18 @@ import scala.util.Try
   * Created by cloudera on 11/25/16.
   */
 
-import com.julianpeeters.caseclass.generator._
 import scala.reflect.runtime.universe._
 
 import net.sf.JRecord.Types.TypeManager
+
+
 
 case class CopybookPreview(param: CopybookSchemaRegisterParameter, copybook:String) extends UserClassRunner {
 
   var externalRecord : ExternalRecord = null
   var lr: AbstractLineReader = null
-  var dcc : DynamicCaseClass = null
   val tm = TypeManager.getSystemTypeManager()
+
 
   val producer = {
     val props = new Properties()
@@ -80,37 +81,32 @@ case class CopybookPreview(param: CopybookSchemaRegisterParameter, copybook:Stri
   def load(datafiles : Map[String, Array[Byte]], types: Array[String]) = {
 
     val overrideTypes = types.map(_=>typeOf[String])
-    val valueMembersA = (externalRecord.asLayoutDetail().getFieldNameMap.values.toList zip overrideTypes).map(f=>FieldData(f._1.getName, f._2))
-
-    System.out.println("valueMembersA = " + valueMembersA)
-
-    val classDataA = ClassData(ClassNamespace(Some("models")), ClassName("MyRecord_UserDefinedRefSpecA"), ClassFieldData(valueMembersA))
-    dcc = DynamicCaseClass(classDataA)
 
     val r = LineIOProvider.getInstance.getLineReader(externalRecord.asLayoutDetail)
-    datafiles.values.map(f=>ProcessFile(r,f)).foldLeft(Iterator[Any]())(_ ++ _)
+    val i = datafiles.values.map(f=>ProcessFile(r,f, overrideTypes)).foldLeft(Iterator[Any]())(_ ++ _)
 
     "[{'a':1},{'a':2}]"
   }
 
 
 
-  private def ProcessFile(abstractLineReader: AbstractLineReader, bytes: Array[Byte]): Iterator[Any]  = {
+  private def ProcessFile(abstractLineReader: AbstractLineReader, bytes: Array[Byte], overrideTypes : Array[Type]): Iterator[Any]  = {
     abstractLineReader.open(new ByteArrayInputStream(bytes), externalRecord.asLayoutDetail())
-    toIter(abstractLineReader,bytes.length)
+    toIter(abstractLineReader,bytes.length, overrideTypes)
   }
 
 
-    def toIter (abstractLineReader: AbstractLineReader,bytesLength: Integer) : Iterator[Any] = new AbstractIterator[Any] {
+    def toIter (abstractLineReader: AbstractLineReader,bytesLength: Integer, overrideTypes: Array[Type]) : Iterator[Any] = new AbstractIterator[Any] {
+      val param = externalRecord.asLayoutDetail().getFieldNameMap.values
+
       var index = 0
       def hasNext = index < bytesLength
 
       def next() = {
         val abstractLine = abstractLineReader.read()
         index+=abstractLine.getData.length
-        val param = externalRecord.asLayoutDetail().getFieldNameMap.values.toList.map(f=>abstractLine.getFieldValue(f).asString)
-        System.out.println("param=" + param)
-        dcc.newInstance(param:_*)
+        val p= param.map(f=>abstractLine.getFieldValue(f)).toList
+        System.out.println("value=" + p)
       }
     }
 

@@ -53,9 +53,8 @@
   <tr ng-repeat="row in CopybookLayoutDetail.fields | filter:searchText">
    <td ng-repeat="cell in row">{{cell}}</td>
   <td>
-
-                <!-- Split button -->
-                <select ng-model="selectCopybookBinaryFormat"  class="form-control" ng-options="x.name for x in CopybookBnaryFormat"></select>
+      <select ng-model="cell.scalaDataType"  class="form-control" ng-options="x for x in ScalaDataType"></select>
+      </td>
   </tr>
  </tbody>
 </table>
