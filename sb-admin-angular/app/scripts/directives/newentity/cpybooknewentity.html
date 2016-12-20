@@ -45,15 +45,17 @@
 
  <thead>
   <tr>
-   <th ng-repeat="(header, value) in CopybookLayoutDetail.fields[0]">{{header}}</th>
-   <th>Type Conversion</th>
+   <th>Name</th>
+   <th>Type</th>
+   <th>Type Override</th>
   </tr>
  </thead>
  <tbody>
   <tr ng-repeat="row in CopybookLayoutDetail.fields | filter:searchText">
-   <td ng-repeat="cell in row">{{cell}}</td>
+   <td> {{row.name}} </td>
+   <td> {{row.tye}} </td>
   <td>
-      <select ng-model="cell.scalaDataType"  class="form-control" ng-options="x for x in ScalaDataType"></select>
+      <select ng-model="row.scalatype"  class="form-control" ng-options="x for x in ScalaDataType"></select>
       </td>
   </tr>
  </tbody>

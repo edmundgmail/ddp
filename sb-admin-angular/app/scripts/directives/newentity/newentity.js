@@ -49,7 +49,12 @@ angular.module('sbAdminApp')
 
         $scope.PreviewCopybookDataFile = function(){
           var formData = new FormData(); 
-          formData.append('types', $scope.CopybookLayoutDetail);
+          var types=[];
+          angular.forEach($scope.CopybookLayoutDetail.fields, function(row){
+              types.push(row.scalatype);
+          });
+
+          formData.append('types', types.toString());
               angular.forEach($scope.copybookDataFile, function(file){ formData.append(file.name, file)});
                 $http.post($rootScope.url+'/ingestionData', formData, {
                   withCredentials: false,

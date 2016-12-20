@@ -21,6 +21,8 @@ import net.sf.JRecord.Details.LayoutDetail
 import org.xeustechnologies.jcl.{JarClassLoader, JclObjectFactory}
 import spray.json.{JsObject, JsString, RootJsonFormat}
 
+import scala.util.parsing.json.JSON
+
 // we don't implement our route structure directly in the service actor because
 // we want to be able to test it independently, without having to spin up an actor
 
@@ -41,16 +43,19 @@ case class CopybookSchemaRegisterParameter(
   copybookFont : String = "cp037"
 )
 
+case class MyFieldDetail(name:String, tye:String, scalatype: String)
+
 import spray.json.DefaultJsonProtocol
 
 object copybookSchemaRegisterJsonProtocol extends DefaultJsonProtocol {
   implicit val copybookSchemaRegisterParameterFormat = jsonFormat5(CopybookSchemaRegisterParameter)
+  implicit val copybookFieldDetailFormat = jsonFormat3(MyFieldDetail)
 
   implicit object FieldDetailFormat extends RootJsonFormat[IFieldDetail] {
-    def write(f: IFieldDetail) = JsObject(Map(
-      "name" -> JsString(f.getName),
-      "type" -> JsNumber(f.getType)
-    ))
+    private def convertType(t:Int) = t match {
+      case 0 :
+    }
+    def write(f: IFieldDetail) = MyFieldDetail(f.getName, convertType(f.getType), "String").toJson
     def read(value: JsValue): IFieldDetail = ???
   }
 
@@ -120,12 +125,11 @@ trait CopybookSchemaRegisterService extends Directives {
                     //val key = headers.find(h => h.is("content-disposition")).get.value.split(";").map(_.trim).filter(_.startsWith("name="))(0).split("name=").last
                     val key = headers(0).value.split(";").map(_.trim).find(_.startsWith("name=")).get.substring(5)
                     if(key.equals("types"))
-                      key -> entity.asString
+                      key ->entity.asString
                     else
                     key -> entity.data.toByteArray
                 } toMap
 
-                System.out.println("types=" +details.get("types"))
                 val types = details.get("types").toString.split(",")
 
                 val datafiles = details.filterKeys(!_.equals("types")).mapValues(_.asInstanceOf[Array[Byte]])
@@ -134,7 +138,7 @@ trait CopybookSchemaRegisterService extends Directives {
                 //val x = s.asInstanceOf[List[IFieldDetail]].map(f=>MyFieldDetail(f.getName))
 
                 //System.out.println("s.class=" + s.getClass + "x.class=" + x.getClass )
-                dataDetail
+                dataDetail.toString()
               }
             }
           }
