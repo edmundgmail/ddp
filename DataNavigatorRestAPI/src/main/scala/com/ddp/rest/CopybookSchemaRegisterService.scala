@@ -53,8 +53,13 @@ object copybookSchemaRegisterJsonProtocol extends DefaultJsonProtocol {
 
   implicit object FieldDetailFormat extends RootJsonFormat[IFieldDetail] {
     private def convertType(t:Int) = t match {
-      case 0 :
+      case 0 => "Unkonwn"
+      case 1 | 2 | 3=> "Char"
+      case 4 => "Decimal"
+      case 6 | 5 => "Num"
+      case _ =>"String"
     }
+
     def write(f: IFieldDetail) = MyFieldDetail(f.getName, convertType(f.getType), "String").toJson
     def read(value: JsValue): IFieldDetail = ???
   }
@@ -138,6 +143,7 @@ trait CopybookSchemaRegisterService extends Directives {
                 //val x = s.asInstanceOf[List[IFieldDetail]].map(f=>MyFieldDetail(f.getName))
 
                 //System.out.println("s.class=" + s.getClass + "x.class=" + x.getClass )
+                System.out.println("dataDetail=" + dataDetail.toString)
                 dataDetail.toString()
               }
             }

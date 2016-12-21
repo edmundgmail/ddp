@@ -48,7 +48,6 @@ case class CopybookPreview(param: CopybookSchemaRegisterParameter, copybook:Stri
   var externalRecord : ExternalRecord = null
   var lr: AbstractLineReader = null
   val tm = TypeManager.getSystemTypeManager()
-tm.getType()
 
   val producer = {
     val props = new Properties()

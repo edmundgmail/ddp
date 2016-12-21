@@ -32,7 +32,8 @@ angular.module('sbAdminApp')
         $scope.copybookDataFile=[];
 
         $scope.CopybookLayoutDetail = null;
-
+        $scope.CopybooDataDetail = [];
+        
         $scope.CopybookSplitLevels = [ {'id': 0,'name':'SplitNone'}, {'id': 1, 'name':'SplitRedefine'}, {'id': 2,'name':'Split01Level'},{'id': 3,'name':'SplitHighestRepeating'}];
         $scope.CopybookFileStructure = [{'id': 2, 'name':'FixedLength'}];
         $scope.CopybookBnaryFormat = [{'id': 1, 'name':'FMT_MAINFRAME'}];
@@ -61,6 +62,7 @@ angular.module('sbAdminApp')
                   transformRequest: angular.identity,
                   headers: {'Content-Type': undefined }})
               .success(function(response){
+                $scope.CopybooDataDetail = response;
                   alert(response);
                 }).error(function(){
                   alert('error');            

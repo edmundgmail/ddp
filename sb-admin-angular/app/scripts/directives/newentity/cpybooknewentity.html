@@ -76,7 +76,38 @@
     <button class="btn btn-primary" ng-disabled="previewDataForm.$invalid">Preview Data</button>
 
 </form>
+ <div>
 
+  <input ng-model=collapseData type=checkbox> Check to show the table
+  <input type="checkbox"
+       ng-model="string"
+       [name="string"]
+       [ng-true-value="expression true"]
+       [ng-false-value="expression false"]
+       [ng-change="string"]>
+
+  <div ng-show=collapseData>
+<div class="dataTable_wrapper">
+<table class="table table-striped table-bordered table-hover" id="dataTables-example1">
+
+ <thead>
+  <tr>
+   <th ng-repeat="(header, value) in CopybooDataDetail[0]">{{header}}</th>
+  </tr>
+ </thead>
+ <tbody>
+  <tr ng-repeat="row in CopybooDataDetail | filter:searchText">
+   
+   <td ng-repeat="cell in row"> {{cell}} </td>
+  </tr>
+ </tbody>
+</table>
+
+</div> 
+</div>
+
+
+</div>
 
 
 </div>
