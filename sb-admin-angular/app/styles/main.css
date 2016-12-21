@@ -30,6 +30,10 @@ body {
   border-top: 1px solid #e5e5e5;
 }
 
+.span3 {  
+    overflow: scroll;
+}
+
 /* Customize container */
 @media (min-width: 768px) {
   .container {
