@@ -1,7 +1,14 @@
 package com.ddp.jdbc
 
+import com.mongodb.client.{MongoCollection, MongoDatabase}
+import com.mongodb.{DB, MongoClient, MongoClientURI}
 import com.typesafe.config.ConfigFactory
 import org.apache.commons.dbcp2.BasicDataSource
+import org.bson.Document
+
+import scala.collection.immutable.IndexedSeq
+
+
 
 /**
   * Created by cloudera on 10/9/16.
@@ -24,5 +31,15 @@ val config = ConfigFactory.load()
     connectionPool.setInitialSize(1)
 
     connectionPool
+  }
+
+
+  def mongoDatabase : MongoDatabase  = {
+    val connectionString: MongoClientURI = new MongoClientURI("mongodb://localhost:27017")
+    val mongoClient: MongoClient = new MongoClient(connectionString)
+
+    val database: MongoDatabase = mongoClient.getDatabase("metadata")
+    database
+
   }
 }
