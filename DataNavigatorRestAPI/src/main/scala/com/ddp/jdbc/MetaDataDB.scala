@@ -37,7 +37,7 @@ object MetaDataDB{
       val statement = Datasource.mysqlConnections.getConnection.createStatement()
       val resultSet = statement.executeQuery(
         """
-        select connection_name from connections
+        select connection_name from connectionsgetConnections
                                              """)
       streamFromResultSet(resultSet){ rs =>
         DataSourceConnection(rs.getString("connection_name"))
