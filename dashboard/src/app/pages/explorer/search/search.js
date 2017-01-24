@@ -5,19 +5,27 @@
     .controller('searchCtrl', searchCtrl);
 
   /** @ngInject */
-  function searchCtrl(text) {
-    var vm = this;
+  function searchCtrl($scope,$http) {
+    $scope.searchtext='';
     //vm.subject = subject;
     //vm.to = to;
-    vm.text = text;
-
     $scope.submit = function() {
-          alert("text=");
-        if ($scope.text) {
+          alert("searchtext=");
+          
+          $http.get($rootScope.url+'/metadata/connHierarchy?conn='+$scope.connectionName)
+         .then(function(response) {
+          $scope.connectionHierarchies = response.data;
 
-          $scope.list.push(this.text);
-          $scope.text = '';
-        }
+          var newEntity = {"dataentity":"New Entity","datafields":[]};
+          angular.forEach($scope.connectionHierarchies, function(s){
+            s.dataEntities.push(newEntity);
+          })
+
+          var newSource = {"datasource" : "New Source", "dataEntities":[]};
+          $scope.connectionHierarchies.push(newSource);
+
+
+        });
       };
   }
 })();

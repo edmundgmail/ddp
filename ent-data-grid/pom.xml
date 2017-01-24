@@ -82,12 +82,12 @@
       <version>${vertx.version}</version>
     </dependency>
 
-    <dependency>
+    <!--dependency>
       <groupId>io.vertx</groupId>
       <artifactId>examples-utils</artifactId>
       <version>${vertx.version}</version>
       <optional>true</optional>
-    </dependency>
+    </dependency-->
 
     <dependency>
       <groupId>io.vertx</groupId>

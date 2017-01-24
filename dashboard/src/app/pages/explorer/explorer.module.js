@@ -28,6 +28,6 @@
             order: 0,
           },
         });
-    $urlRouterProvider.when('/explorer','/tables/search');
+    $urlRouterProvider.when('/explorer','/explorer/search');
   }
 })();

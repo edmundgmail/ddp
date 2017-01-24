@@ -50,7 +50,7 @@ public class SimpleREST extends AbstractVerticle {
     Router router = Router.router(vertx);
 
     router.route().handler(BodyHandler.create());
-    router.get("/products/:productID").handler(this::handleGetProduct);to 
+    router.get("/products/:productID").handler(this::handleGetProduct);
     router.put("/products/:productID").handler(this::handleAddProduct);
     router.get("/products").handler(this::handleListProducts);
 
