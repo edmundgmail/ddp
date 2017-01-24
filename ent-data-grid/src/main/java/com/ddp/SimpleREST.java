@@ -16,19 +16,32 @@
 
 package com.ddp;
 
+import com.ddp.metadata.DataBrowse;
+import com.ddp.metadata.IDataBrowse;
+import com.ddp.pojos.DataSourceDetail;
+import com.ddp.pojos.RequestParam;
+import com.google.gson.Gson;
 import io.vertx.core.AbstractVerticle;
+import io.vertx.core.http.HttpMethod;
 import io.vertx.core.http.HttpServerResponse;
 import io.vertx.core.json.JsonArray;
 import io.vertx.core.json.JsonObject;
+
+import io.vertx.core.logging.Logger;
+import io.vertx.core.logging.LoggerFactory;
+import io.vertx.ext.jdbc.JDBCClient;
 import io.vertx.ext.web.Router;
 import io.vertx.ext.web.RoutingContext;
 import io.vertx.ext.web.handler.BodyHandler;
 
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 import com.ddp.util.*;
+import io.vertx.ext.web.handler.CorsHandler;
 import io.vertx.ext.web.handler.StaticHandler;
+
 
 /**
  * @author <a href="http://tfox.org">Tim Fox</a>
@@ -42,21 +55,56 @@ public class SimpleREST extends AbstractVerticle {
 
   private Map<String, JsonObject> products = new HashMap<>();
 
+  private IDataBrowse dataBrowse;
+  private Gson gson;
+  private Logger LOGGER = LoggerFactory.getLogger("SimpleREST");
+
   @Override
   public void start() {
 
     setUpInitialData();
+      gson = new Gson();
+
+    final JDBCClient client = JDBCClient.createShared(vertx, new JsonObject()
+              .put("url", "jdbc:mysql://localhost:3306/ddp_metastore?profileSQL=true")
+              .put("user","root")
+              .put("password","cloudera")
+              .put("driver_class", "com.mysql.jdbc.Driver")
+              .put("max_pool_size", 30));
+
+    dataBrowse = new DataBrowse(client);
 
     Router router = Router.router(vertx);
 
-    router.route().handler(BodyHandler.create());
+    router.route().handler(CorsHandler.create("*")
+            .allowedMethod(HttpMethod.GET)
+            .allowedMethod(HttpMethod.POST)
+            .allowedMethod(HttpMethod.OPTIONS)
+            .allowedHeader("X-PINGARUNER")
+            .allowedHeader("Content-Type"));
+
+    //router.route().handler(BodyHandler.create());
     router.get("/products/:productID").handler(this::handleGetProduct);
     router.put("/products/:productID").handler(this::handleAddProduct);
     router.get("/products").handler(this::handleListProducts);
 
-      router.route("/*").handler(StaticHandler.create());
+
+    router.get("/hierarchy").handler(this::handleListHierarchy);
+      //router.route("/*").handler(StaticHandler.create());
 
     vertx.createHttpServer().requestHandler(router::accept).listen(9001);
+  }
+
+  private void handleListHierarchy(RoutingContext routingContext) {
+
+      RequestParam param = new RequestParam(routingContext);
+      LOGGER.info("param=" + param);
+
+      JsonArray arr = new JsonArray();
+      List<DataSourceDetail> details = dataBrowse.listDataSourceDetails(param);
+
+      details.forEach( d->arr.add(new JsonObject(gson.toJson(d))));
+      routingContext.response().putHeader("content-type", "application/json").end(arr.encodePrettily());
   }
 
   private void handleGetProduct(RoutingContext routingContext) {

@@ -15,4 +15,6 @@ angular.module('BlurAdmin', [
 
   'BlurAdmin.theme',
   'BlurAdmin.pages'
-]);
+]).controller('MainCtrl', function($scope,$rootScope, $position) {
+    $rootScope.url='http://192.168.56.101:9001';
+  });
