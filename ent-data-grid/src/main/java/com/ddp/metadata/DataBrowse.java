@@ -11,6 +11,7 @@ import io.vertx.ext.sql.SQLConnection;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Optional;
 
 /**
  * Created by cloudera on 1/24/17.
@@ -24,37 +25,32 @@ public class DataBrowse implements IDataBrowse{
         this.jdbcClient = client;
     }
 
-    public List<DataSourceDetail> listDataSourceDetails(RequestParam requestParam){
-
+    public Optional<List<JsonObject>> listDataSourceDetails(RequestParam requestParam){
         try {
             jdbcClient.getConnection(res -> {
                 if (res.succeeded()) {
 
                     SQLConnection connection = res.result();
 
-                    connection.query("SELECT * FROM view_hierarchy", res2 -> {
+                    connection.query("SELECT datasource_name FROM datasource", res2 -> {
                         if (res2.succeeded()) {
-
                             ResultSet rs = res2.result();
-                            // Do something with results
+                             rs.getRows();
                         }
+                        else
+                            Optional.empty();
                     });
                 } else {
                     // Failed to get connection - deal with it
                     LOGGER.info("can't get connecton");
-
+                    Optional.empty();
                 }
             });
         }
         catch(Exception e){
             e.printStackTrace();
+            return Optional.empty();
         }
-        DataSourceDetail detail = new DataSourceDetail();
-        detail.setSourceName("test1");
-
-        List<DataSourceDetail> l = new ArrayList<>();
-        l.add(detail);
-
-        return l;
+        //return Optional.empty();
     }
 }

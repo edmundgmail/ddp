@@ -37,6 +37,7 @@ import io.vertx.ext.web.handler.BodyHandler;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 
 import com.ddp.util.*;
 import io.vertx.ext.web.handler.CorsHandler;
@@ -101,10 +102,15 @@ public class SimpleREST extends AbstractVerticle {
       LOGGER.info("param=" + param);
 
       JsonArray arr = new JsonArray();
-      List<DataSourceDetail> details = dataBrowse.listDataSourceDetails(param);
+      //List<DataSourceDetail> details = dataBrowse.listDataSourceDetails(param);
+      Optional<List<JsonObject>> optional  = dataBrowse.listDataSourceDetails(param);
 
-      details.forEach( d->arr.add(new JsonObject(gson.toJson(d))));
-      routingContext.response().putHeader("content-type", "application/json").end(arr.encodePrettily());
+      if(optional.isPresent()){
+        routingContext.response().putHeader("content-type", "application/json").end(optional.get().toString());
+      }
+      else
+          routingContext.response().putHeader("content-type", "application/json").end();
+
   }
 
   private void handleGetProduct(RoutingContext routingContext) {
