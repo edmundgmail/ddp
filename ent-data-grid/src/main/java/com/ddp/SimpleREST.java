@@ -29,7 +29,10 @@ import io.vertx.core.json.JsonObject;
 
 import io.vertx.core.logging.Logger;
 import io.vertx.core.logging.LoggerFactory;
+import io.vertx.ext.asyncsql.AsyncSQLClient;
+import io.vertx.ext.asyncsql.MySQLClient;
 import io.vertx.ext.jdbc.JDBCClient;
+import io.vertx.ext.sql.SQLConnection;
 import io.vertx.ext.web.Router;
 import io.vertx.ext.web.RoutingContext;
 import io.vertx.ext.web.handler.BodyHandler;
@@ -57,97 +60,50 @@ public class SimpleREST extends AbstractVerticle {
   private Map<String, JsonObject> products = new HashMap<>();
 
   private IDataBrowse dataBrowse;
-  private Gson gson;
   private Logger LOGGER = LoggerFactory.getLogger("SimpleREST");
+  JDBCClient client;
 
-  @Override
+    @Override
   public void start() {
 
     setUpInitialData();
-      gson = new Gson();
-
-    final JDBCClient client = JDBCClient.createShared(vertx, new JsonObject()
-              .put("url", "jdbc:mysql://localhost:3306/ddp_metastore?profileSQL=true")
-              .put("user","root")
-              .put("password","cloudera")
-              .put("driver_class", "com.mysql.jdbc.Driver")
-              .put("max_pool_size", 30));
-
-    dataBrowse = new DataBrowse(client);
-
-    Router router = Router.router(vertx);
-
-    router.route().handler(CorsHandler.create("*")
-            .allowedMethod(HttpMethod.GET)
-            .allowedMethod(HttpMethod.POST)
-            .allowedMethod(HttpMethod.OPTIONS)
-            .allowedHeader("X-PINGARUNER")
-            .allowedHeader("Content-Type"));
-
-    //router.route().handler(BodyHandler.create());
-    router.get("/products/:productID").handler(this::handleGetProduct);
-    router.put("/products/:productID").handler(this::handleAddProduct);
-    router.get("/products").handler(this::handleListProducts);
 
 
-    router.get("/hierarchy").handler(this::handleListHierarchy);
+    JsonObject config = new JsonObject()
+            .put("url", "jdbc:mysql://localhost:3306/metadata_ddp?user=root&password=password")
+            .put("driver_class", "com.mysql.jdbc.Driver");
+
+    client = JDBCClient.createShared(vertx, config);
+
+
+      Router router = Router.router(vertx);
+      router.route().handler(
+                CorsHandler.create("*")
+                        .allowedMethod(HttpMethod.GET)
+                        .allowedMethod(HttpMethod.POST)
+                        .allowedMethod(HttpMethod.OPTIONS)
+                        .allowedHeader("X-PINGARUNER")
+                        .allowedHeader("Content-Type")
+              );
+
+      //router.route().handler(BodyHandler.create());
+      router.get("/hierarchy").handler(this::handleListHierarchy);
       //router.route("/*").handler(StaticHandler.create());
 
-    vertx.createHttpServer().requestHandler(router::accept).listen(9001);
+      vertx.createHttpServer().requestHandler(router::accept).listen(9001);
+
+    //dataBrowse = new DataBrowse(client);
   }
+
 
   private void handleListHierarchy(RoutingContext routingContext) {
-
-      RequestParam param = new RequestParam(routingContext);
-      LOGGER.info("param=" + param);
-
-      JsonArray arr = new JsonArray();
-      //List<DataSourceDetail> details = dataBrowse.listDataSourceDetails(param);
-      Optional<List<JsonObject>> optional  = dataBrowse.listDataSourceDetails(param);
-
-      if(optional.isPresent()){
-        routingContext.response().putHeader("content-type", "application/json").end(optional.get().toString());
-      }
-      else
-          routingContext.response().putHeader("content-type", "application/json").end();
-
-  }
-
-  private void handleGetProduct(RoutingContext routingContext) {
-    String productID = routingContext.request().getParam("productID");
     HttpServerResponse response = routingContext.response();
-    if (productID == null) {
-      sendError(400, response);
-    } else {
-      JsonObject product = products.get(productID);
-      if (product == null) {
-        sendError(404, response);
-      } else {
-        response.putHeader("content-type", "application/json").end(product.encodePrettily());
-      }
-    }
-  }
 
-  private void handleAddProduct(RoutingContext routingContext) {
-    String productID = routingContext.request().getParam("productID");
-    HttpServerResponse response = routingContext.response();
-    if (productID == null) {
-      sendError(400, response);
-    } else {
-      JsonObject product = routingContext.getBodyAsJson();
-      if (product == null) {
-        sendError(400, response);
-      } else {
-        products.put(productID, product);
-        response.end();
-      }
-    }
-  }
-
-  private void handleListProducts(RoutingContext routingContext) {
-    JsonArray arr = new JsonArray();
-    products.forEach((k, v) -> arr.add(v));
-    routingContext.response().putHeader("content-type", "application/json").end(arr.encodePrettily());
+      client.getConnection( res-> {
+         if(res.succeeded()){
+             dataBrowse.listDataSourceDetails(res.result(), response);
+         }
+      });
   }
 
   private void sendError(int statusCode, HttpServerResponse response) {
@@ -155,12 +111,8 @@ public class SimpleREST extends AbstractVerticle {
   }
 
   private void setUpInitialData() {
-    addProduct(new JsonObject().put("id", "prod3568").put("name", "Egg Whisk").put("price", 3.99).put("weight", 150));
-    addProduct(new JsonObject().put("id", "prod7340").put("name", "Tea Cosy").put("price", 5.99).put("weight", 100));
-    addProduct(new JsonObject().put("id", "prod8643").put("name", "Spatula").put("price", 1.00).put("weight", 80));
+      dataBrowse = new DataBrowse();
   }
 
-  private void addProduct(JsonObject product) {
-    products.put(product.getString("id"), product);
-  }
+
 }

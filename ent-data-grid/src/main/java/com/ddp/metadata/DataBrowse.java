@@ -2,6 +2,7 @@ package com.ddp.metadata;
 
 import com.ddp.pojos.DataSourceDetail;
 import com.ddp.pojos.RequestParam;
+import io.vertx.core.http.HttpServerResponse;
 import io.vertx.core.json.JsonObject;
 import io.vertx.core.logging.Logger;
 import io.vertx.core.logging.LoggerFactory;
@@ -17,40 +18,20 @@ import java.util.Optional;
  * Created by cloudera on 1/24/17.
  */
 public class DataBrowse implements IDataBrowse{
-    private JDBCClient jdbcClient;
 
     Logger LOGGER = LoggerFactory.getLogger(DataBrowse.class);
 
-    public DataBrowse(JDBCClient client){
-        this.jdbcClient = client;
-    }
-
-    public Optional<List<JsonObject>> listDataSourceDetails(RequestParam requestParam){
-        try {
-            jdbcClient.getConnection(res -> {
-                if (res.succeeded()) {
-
-                    SQLConnection connection = res.result();
-
-                    connection.query("SELECT datasource_name FROM datasource", res2 -> {
-                        if (res2.succeeded()) {
-                            ResultSet rs = res2.result();
-                             rs.getRows();
-                        }
-                        else
-                            Optional.empty();
-                    });
-                } else {
-                    // Failed to get connection - deal with it
-                    LOGGER.info("can't get connecton");
-                    Optional.empty();
-                }
-            });
-        }
-        catch(Exception e){
-            e.printStackTrace();
-            return Optional.empty();
-        }
-        //return Optional.empty();
+    public void listDataSourceDetails(SQLConnection conn, HttpServerResponse response){
+                        conn.query("SELECT datasource_name FROM datasource", query -> {
+                            if (query.failed()) {
+                                response.setStatusCode(500).end();
+                            } else {
+                                if (query.result().getNumRows() == 0) {
+                                    response.setStatusCode(403).end();
+                                } else {
+                                    response.putHeader("content-type", "application/json").end(query.result().getRows().get(0).encode());
+                                }
+                            }
+                        });
     }
 }
