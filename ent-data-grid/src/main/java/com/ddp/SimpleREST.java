@@ -21,6 +21,7 @@ import com.ddp.metadata.IDataBrowse;
 import com.ddp.pojos.DataSourceDetail;
 import com.ddp.pojos.RequestParam;
 import com.google.gson.Gson;
+import com.hazelcast.spi.impl.operationservice.impl.responses.Response;
 import io.vertx.core.AbstractVerticle;
 import io.vertx.core.http.HttpMethod;
 import io.vertx.core.http.HttpServerResponse;
@@ -41,6 +42,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
+import java.util.function.Consumer;
 
 import com.ddp.util.*;
 import io.vertx.ext.web.handler.CorsHandler;
@@ -75,7 +77,6 @@ public class SimpleREST extends AbstractVerticle {
 
     client = JDBCClient.createShared(vertx, config);
 
-
       Router router = Router.router(vertx);
       router.route().handler(
                 CorsHandler.create("*")
@@ -85,29 +86,32 @@ public class SimpleREST extends AbstractVerticle {
                         .allowedHeader("X-PINGARUNER")
                         .allowedHeader("Content-Type")
               );
-
       //router.route().handler(BodyHandler.create());
       router.get("/hierarchy").handler(this::handleListHierarchy);
+      router.get("/hierarchy/:sourceID").handler(this::handleListHierarchy);
       //router.route("/*").handler(StaticHandler.create());
 
       vertx.createHttpServer().requestHandler(router::accept).listen(9001);
-
-    //dataBrowse = new DataBrowse(client);
   }
-
 
   private void handleListHierarchy(RoutingContext routingContext) {
     HttpServerResponse response = routingContext.response();
 
+      Consumer<Integer> errorHandler = i-> response.setStatusCode(i).end();
+      Consumer<String> responseHandler = s-> response.putHeader("content-type", "application/json").end(s);
+
       client.getConnection( res-> {
          if(res.succeeded()){
-             dataBrowse.listDataSourceDetails(res.result(), response);
+             String sourceID = routingContext.request().getParam("sourceID");
+             LOGGER.info("sourceID=" + sourceID);
+
+             if(sourceID==null)
+                dataBrowse.listDataSourceDetails(res.result(), errorHandler, responseHandler);
+             else
+                 dataBrowse.listDataSourceDetails(res.result(), errorHandler, responseHandler);
+
          }
       });
-  }
-
-  private void sendError(int statusCode, HttpServerResponse response) {
-    response.setStatusCode(statusCode).end();
   }
 
   private void setUpInitialData() {

@@ -9,10 +9,13 @@ import io.vertx.ext.sql.SQLConnection;
 
 import java.util.List;
 import java.util.Optional;
+import java.util.function.Consumer;
+import java.util.function.Function;
 
 /**
  * Created by cloudera on 1/24/17.
  */
 public interface IDataBrowse {
-    void listDataSourceDetails(SQLConnection conn, HttpServerResponse Response) ;
+    void listDataSourceDetails(SQLConnection conn, Consumer<Integer> errorHandler, Consumer<String> responseHandler) ;
+
 }
