@@ -16,37 +16,26 @@
 
 package com.ddp;
 
-import com.ddp.metadata.DataBrowse;
-import com.ddp.metadata.IDataBrowse;
-import com.ddp.pojos.DataSourceDetail;
-import com.ddp.pojos.RequestParam;
-import com.google.gson.Gson;
-import com.hazelcast.spi.impl.operationservice.impl.responses.Response;
+import com.ddp.hierarchy.DataBrowse;
+import com.ddp.hierarchy.IDataBrowse;
 import io.vertx.core.AbstractVerticle;
 import io.vertx.core.http.HttpMethod;
 import io.vertx.core.http.HttpServerResponse;
-import io.vertx.core.json.JsonArray;
 import io.vertx.core.json.JsonObject;
 
 import io.vertx.core.logging.Logger;
 import io.vertx.core.logging.LoggerFactory;
-import io.vertx.ext.asyncsql.AsyncSQLClient;
-import io.vertx.ext.asyncsql.MySQLClient;
 import io.vertx.ext.jdbc.JDBCClient;
-import io.vertx.ext.sql.SQLConnection;
 import io.vertx.ext.web.Router;
 import io.vertx.ext.web.RoutingContext;
-import io.vertx.ext.web.handler.BodyHandler;
 
 import java.util.HashMap;
-import java.util.List;
 import java.util.Map;
-import java.util.Optional;
 import java.util.function.Consumer;
 
 import com.ddp.util.*;
 import io.vertx.ext.web.handler.CorsHandler;
-import io.vertx.ext.web.handler.StaticHandler;
+import org.apache.commons.lang3.math.NumberUtils;
 
 
 /**
@@ -70,13 +59,6 @@ public class SimpleREST extends AbstractVerticle {
 
     setUpInitialData();
 
-
-    JsonObject config = new JsonObject()
-            .put("url", "jdbc:mysql://localhost:3306/metadata_ddp?user=root&password=password")
-            .put("driver_class", "com.mysql.jdbc.Driver");
-
-    client = JDBCClient.createShared(vertx, config);
-
       Router router = Router.router(vertx);
       router.route().handler(
                 CorsHandler.create("*")
@@ -88,34 +70,33 @@ public class SimpleREST extends AbstractVerticle {
               );
       //router.route().handler(BodyHandler.create());
       router.get("/hierarchy").handler(this::handleListHierarchy);
-      router.get("/hierarchy/:sourceID").handler(this::handleListHierarchy);
       //router.route("/*").handler(StaticHandler.create());
 
       vertx.createHttpServer().requestHandler(router::accept).listen(9001);
   }
 
-  private void handleListHierarchy(RoutingContext routingContext) {
+private void handleListHierarchy(RoutingContext routingContext){
     HttpServerResponse response = routingContext.response();
+    Consumer<Integer> errorHandler = i-> response.setStatusCode(i).end();
+    Consumer<String> responseHandler = s-> response.putHeader("content-type", "application/json").end(s);
 
-      Consumer<Integer> errorHandler = i-> response.setStatusCode(i).end();
-      Consumer<String> responseHandler = s-> response.putHeader("content-type", "application/json").end(s);
+    int pageNum = NumberUtils.toInt(routingContext.request().getParam("pageNum"), 0);
+    int pageSize = NumberUtils.toInt(routingContext.request().getParam("pageSize"), 20);
+    Long sourceID = NumberUtils.toLong(routingContext.request().getParam("sourceID"), 0);
+    Long entityID = NumberUtils.toLong(routingContext.request().getParam("entityID"),0);
 
-      client.getConnection( res-> {
-         if(res.succeeded()){
-             String sourceID = routingContext.request().getParam("sourceID");
-             LOGGER.info("sourceID=" + sourceID);
+    dataBrowse.handleListHierarchy(errorHandler, responseHandler, pageNum, pageSize, sourceID, entityID);
 
-             if(sourceID==null)
-                dataBrowse.listDataSourceDetails(res.result(), errorHandler, responseHandler);
-             else
-                 dataBrowse.listDataSourceDetails(res.result(), errorHandler, responseHandler);
+}
 
-         }
-      });
-  }
+ private void setUpInitialData() {
+     JsonObject config = new JsonObject()
+             .put("url", "jdbc:mysql://localhost:3306/metadata_ddp?user=root&password=password")
+             .put("driver_class", "com.mysql.jdbc.Driver");
 
-  private void setUpInitialData() {
-      dataBrowse = new DataBrowse();
+     client = JDBCClient.createShared(vertx, config);
+
+     dataBrowse = new DataBrowse(client);
   }
 
 
