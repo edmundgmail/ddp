@@ -19,6 +19,7 @@ package com.ddp;
 import com.ddp.hierarchy.DataBrowse;
 import com.ddp.hierarchy.IDataBrowse;
 import io.vertx.core.AbstractVerticle;
+import io.vertx.core.DeploymentOptions;
 import io.vertx.core.http.HttpMethod;
 import io.vertx.core.http.HttpServerResponse;
 import io.vertx.core.json.JsonObject;
@@ -42,11 +43,6 @@ import org.apache.commons.lang3.math.NumberUtils;
  * @author <a href="http://tfox.org">Tim Fox</a>
  */
 public class SimpleREST extends AbstractVerticle {
-
-  // Convenience method so you can run it in your IDE
-  public static void main(String[] args) {
-    Runner.runExample(SimpleREST.class);
-  }
 
   private Map<String, JsonObject> products = new HashMap<>();
 
@@ -72,7 +68,7 @@ public class SimpleREST extends AbstractVerticle {
       router.get("/hierarchy").handler(this::handleListHierarchy);
       //router.route("/*").handler(StaticHandler.create());
 
-      vertx.createHttpServer().requestHandler(router::accept).listen(9001);
+      vertx.createHttpServer().requestHandler(router::accept).listen(config().getInteger("http.port", 9001));
   }
 
 private void handleListHierarchy(RoutingContext routingContext){

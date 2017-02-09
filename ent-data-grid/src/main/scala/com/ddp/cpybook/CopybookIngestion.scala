@@ -28,11 +28,11 @@ case class CopybookSchemaRegisterParameter(
 )
 
 
-  case class CopybookIngestion (sqlContext : SparkSession, param: CopybookIngestionParameter) extends UserClassRunner{
+  case class CopybookIngestion (hdfsConf: String, sqlContext : SparkSession, param: CopybookIngestionParameter) extends UserClassRunner{
 
     override def run() : Any = {
       val conf = new hadoop.conf.Configuration
-      conf.set("fs.defaultFS", "com.ddp.rest.defaultFS")
+      conf.set("fs.defaultFS", hdfsConf)
 
       conf.set(Constants.CopybookName, param.cpyBookName)
       conf.set(Constants.CopybookHdfsPath, param.cpyBookHdfsPath  )
