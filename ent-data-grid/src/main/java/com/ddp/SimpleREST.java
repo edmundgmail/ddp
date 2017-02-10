@@ -18,8 +18,12 @@ package com.ddp;
 
 import com.ddp.hierarchy.DataBrowse;
 import com.ddp.hierarchy.IDataBrowse;
+import io.netty.handler.codec.http.QueryStringDecoder;
 import io.vertx.core.AbstractVerticle;
 import io.vertx.core.DeploymentOptions;
+import io.vertx.core.Handler;
+import io.vertx.core.buffer.Buffer;
+import io.vertx.core.eventbus.EventBus;
 import io.vertx.core.http.HttpMethod;
 import io.vertx.core.http.HttpServerResponse;
 import io.vertx.core.json.JsonObject;
@@ -31,6 +35,7 @@ import io.vertx.ext.web.Router;
 import io.vertx.ext.web.RoutingContext;
 
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.function.Consumer;
 
@@ -48,7 +53,8 @@ public class SimpleREST extends AbstractVerticle {
 
   private IDataBrowse dataBrowse;
   private Logger LOGGER = LoggerFactory.getLogger("SimpleREST");
-  JDBCClient client;
+  private JDBCClient client;
+  private EventBus eventBus;
 
     @Override
   public void start() {
@@ -66,12 +72,34 @@ public class SimpleREST extends AbstractVerticle {
               );
       //router.route().handler(BodyHandler.create());
       router.get("/hierarchy").handler(this::handleListHierarchy);
+
+      router.post("/ingestion").handler(this::handleIngestion);
       //router.route("/*").handler(StaticHandler.create());
 
       vertx.createHttpServer().requestHandler(router::accept).listen(config().getInteger("http.port", 9001));
-  }
+    }
 
-private void handleListHierarchy(RoutingContext routingContext){
+    private void handleIngestion(RoutingContext routingContext){
+        // Custom message
+        routingContext.request().bodyHandler(new Handler<Buffer>() {
+            @Override
+            public void handle(Buffer buffer) {
+
+                CustomMessage clusterWideMessage = new CustomMessage(1, "", buffer.toString());
+                eventBus.send(config().getString("eventbus.spark"), clusterWideMessage, reply -> {
+                    if (reply.succeeded()) {
+                        System.out.println("Received reply: ");
+                    } else {
+                        System.out.println("No reply from cluster receiver");
+                    }
+                });
+
+            }
+        });
+
+    }
+
+   private void handleListHierarchy(RoutingContext routingContext){
     HttpServerResponse response = routingContext.response();
     Consumer<Integer> errorHandler = i-> response.setStatusCode(i).end();
     Consumer<String> responseHandler = s-> response.putHeader("content-type", "application/json").end(s);
@@ -87,12 +115,15 @@ private void handleListHierarchy(RoutingContext routingContext){
 
  private void setUpInitialData() {
      JsonObject config = new JsonObject()
-             .put("url", "jdbc:mysql://localhost:3306/metadata_ddp?user=root&password=password")
-             .put("driver_class", "com.mysql.jdbc.Driver");
+             .put("url", config().getString("mysql.url"))
+             .put("driver_class", config().getString("mysql.driver.class"));
 
      client = JDBCClient.createShared(vertx, config);
 
      dataBrowse = new DataBrowse(client);
+     eventBus = getVertx().eventBus();
+     eventBus.registerDefaultCodec(CustomMessage.class, new CustomMessageCodec());
+
   }
 
 

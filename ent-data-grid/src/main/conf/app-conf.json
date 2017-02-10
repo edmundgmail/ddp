@@ -1,5 +1,0 @@
-{
-  "http.port" : 8082,
-  "spark.master":"local[2]",
-  "hdfs.conf" : "hdfs://localhost:8020/"
-}

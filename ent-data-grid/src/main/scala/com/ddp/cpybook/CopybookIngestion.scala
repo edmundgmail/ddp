@@ -19,14 +19,6 @@ case class CopybookIngestionParameter(
                                splitOptoin: String = "SplitNone"
                              )
 
-case class CopybookSchemaRegisterParameter(
-  cpyBookName : String,
-  copybookSplitLevel : String = "Split01Level",
-  copybookFileStructure : String = "FixedLength",
-  copybookBinaryFormat: String = "FMT_MAINFRAME",
-  copybookFont : String = "cp037"
-)
-
 
   case class CopybookIngestion (hdfsConf: String, sqlContext : SparkSession, param: CopybookIngestionParameter) extends UserClassRunner{
 
