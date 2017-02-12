@@ -4,5 +4,6 @@ lib_managed/
 src_managed/
 test-output/
 ent_data_grid/.idea/
+ent_data_grid/.idea/libraries
 *.iml
 .classpath_nb

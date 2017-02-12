@@ -2,7 +2,8 @@ package com.ddp.cpybook
 
 import com.ddp.access.UserClassRunner
 import org.apache.hadoop
-import org.apache.spark.sql.SparkSession
+import org.apache.spark.SparkContext
+import org.apache.spark.sql.SQLContext
 
 /**
   * Created by cloudera on 9/3/16.
@@ -20,7 +21,7 @@ case class CopybookIngestionParameter(
                              )
 
 
-  case class CopybookIngestion (hdfsConf: String, sqlContext : SparkSession, param: CopybookIngestionParameter) extends UserClassRunner{
+  case class CopybookIngestion (hdfsConf: String, sqlContext : SQLContext, param: CopybookIngestionParameter) extends UserClassRunner{
 
     override def run() : Any = {
       val conf = new hadoop.conf.Configuration

@@ -1,0 +1,76 @@
+<html>
+
+<H1><A NAME="Header_1">JRecord</A></H1>
+<P>
+<ul>
+ <li><a href="#Intro">Introduction</a></li>
+ <li><a href="#Jars">Jars in this directory</a></li>
+ <li><a href="#Cbl2Cbl">Parameters for Cobol2Cobol</a></li>
+</ul>
+<P>
+<h2><a id="Intro">Introduction</a></h2>
+<P><B>JRecord</B> provides
+<ol>
+  <li>IO routines for Length Based (Lines are either fixed length or a length
+  field at the start f the record) files.</li>
+  <li>IO routines for Cobol files (both Text and Binary).
+</li>
+</ol>
+<p>JRecord was split off as a separate project from the <a href="http://record-editor.sourceforge.net" target="_top">RecordEditor</a>
+project on the request of several users.
+
+<p>The <a href="Example">Example Directory</a> holds:<ul>
+<li>Sample bat files / shell scripts 
+for running java program <b>XmplLineIOD</b> with <b>JRecord</b> to read a <b>Cobol binary</b> file.
+<br/>The program <b>XmplLineIOD.java</b></li>
+can be found in the <a href="../Source/JRecord/src/net/sf/JRecord/zExamples/">Examples Directory</a>.
+<li>Sample bat files / shell scripts for running <b>Cobol2Csv.jar</b>, <b>Csv2Cobol.jar</b> and <b>Cobol2Cobol.jar</b>.
+</li>
+</ul>
+
+<h2><a id="Jars">Jars in this directory</a></h2>
+<ul>
+ <li><b>cb2xml.jar</b> - Cobol analysis Jar
+ <li><b>JRecord.jar</b> - JRecord library
+ <li><b>Cobol2Cobol.jar</b> - Copy from one Cobol Data file to another (matching the data names).
+ <li><b>Cobol2Xml.jar</b> - Copy a single record Cobol Data file to/from Xml file.
+</ul>
+<p><b>Warning</b> - Cobol2Csv, Csv2Cobol and Cobol2Cobol are example programs I would suggest testing throughly before using them in production.
+<p><b>Note:</b> All three utilities now accept Xml-Schema's instead of Cobol-Copybooks
+</p>
+ 
+</pre>
+
+<h2><a id="Cbl2Cbl">Parameters for Cobol2Cobol</a></h2>
+
+<pre>                                           
+Program arguments:
+          
+    <font color="blue"><b>-I</b></font>  or <font color="blue"><b>-InputFile    </b></font>: Input file
+    <font color="blue"><b>-InputCopybook       </b></font>: Cobol/Xml Copybook file
+    <font color="blue"><b>-InputFileStructure  </b></font>: Input File Structure (or File-Organisation):
+        <b>Default</b>          : Determine by  
+        <b>Text</b>             : Use Standard Text IO              
+        <b>Fixed_Length </b>    : Fixed record Length binary 
+        <b>Binary       </b>    : Binary File, length based on record 
+        <b>Mainframe_VB </b>    : Mainframe VB File 
+        <b>Mainframe_VB_As_RECFMU</b>    : Mainframe VB File including BDW (block descriptor word)
+        <b>FUJITSU_VB</b>       : Fujitsu Cobol VB File 
+        <b>Open_Cobol_VB</b>    : Gnu Cobol VB File 
+    <font color="blue"><b>-InputCharacterSet   </b></font>: Input font or character set
+    <font color="blue"><b>-InputDialect        </b></font>: Cobol Dialect
+        <b>0</b> or Intel</b>       : Intel little endian 
+        <b>1</b> or Mainframe</b>   : Mainframe big endian (Default) 
+        <b>4</b> or Open_Cobol_Little_Endian_(Intel)</b>    : Gnu:Cobol 
+        <b>2</b> or Fujitsu</b>     : Fujitsu Cobol 
+
+    <font color="blue"><b>-O</b></font>  or <font color="blue"><b>-OutputFile   </b></font>: Output file
+    <font color="blue"><b>-OutputCharacterSet  </b></font>: Output font or character set
+    <font color="blue"><b>-OutputCopybook      </b></font>: Output Cobol/Xml Copybook file
+    <font color="blue"><b>-OutputFileStructure </b></font>: Output File Structure (or File-Organisation)
+            See: <b>-InputFileStructure</b> for details
+    <font color="blue"><b>-OutputCharacterSet  </b></font>: Output font or character set
+    <font color="blue"><b>-OutputDialect       </b></font>: Output Cobol Dialect) 
+            See: <b>-InputDialect</b> for details
+</pre>
+</html>

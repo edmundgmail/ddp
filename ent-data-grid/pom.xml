@@ -14,7 +14,7 @@
 
     <properties>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
-        <spark.version>2.1.0</spark.version>
+        <spark.version>1.6.0</spark.version>
         <hadoop.version>2.6.0-cdh5.8.0</hadoop.version>
         <scala.version>2.11.6</scala.version>
         <java.version>1.8</java.version>
@@ -41,13 +41,6 @@
             <artifactId>antlr4-runtime</artifactId>
             <version>4.6</version>
             <scope>compile</scope>
-        </dependency>
-
-        <dependency>
-              <groupId>io.vertx</groupId>
-              <artifactId>examples-utils</artifactId>
-              <version>${vertx.version}</version>
-              <optional>true</optional>
         </dependency>
 
         <dependency>
@@ -117,30 +110,6 @@
             <artifactId>jade4j</artifactId>
             <version>0.4.0</version>
         </dependency>
-
-
-        <dependency>
-            <groupId>com.legsem.legstar</groupId>
-            <artifactId>legstar.avro.generator</artifactId>
-            <version>0.4.3-SNAPSHOT</version>
-            <scope>compile</scope>
-        </dependency>
-
-        <dependency>
-            <groupId>com.legsem.legstar</groupId>
-            <artifactId>legstar.avro.cob2avro</artifactId>
-            <version>0.4.3-SNAPSHOT</version>
-            <scope>compile</scope>
-        </dependency>
-
-        <dependency>
-            <groupId>com.legsem.legstar</groupId>
-            <artifactId>legstar-cob2xsd</artifactId>
-            <version>2.0.4</version>
-            <scope>compile</scope>
-        </dependency>
-
-
 
         <dependency>
             <groupId>com.ddp.access</groupId>
@@ -311,28 +280,9 @@
         </dependency>
         
         <dependency>
-            <groupId>io.confluent</groupId>
-            <artifactId>kafka-schema-registry-client</artifactId>
-            <version>3.2.0-SNAPSHOT</version>
-            <scope>compile</scope>
-        </dependency>
-
-        <dependency>
             <groupId>org.apache.avro</groupId>
             <artifactId>avro</artifactId>
             <version>1.7.7</version>
-            <scope>compile</scope>
-        </dependency>
-        <dependency>
-            <groupId>io.confluent</groupId>
-            <artifactId>kafka-avro-serializer</artifactId>
-            <version>3.2.0-SNAPSHOT</version>
-            <scope>compile</scope>
-        </dependency>
-        <dependency>
-            <groupId>org.apache.kafka</groupId>
-            <artifactId>kafka_2.11</artifactId>
-            <version>0.10.2.0-SNAPSHOT</version>
             <scope>compile</scope>
         </dependency>
 
