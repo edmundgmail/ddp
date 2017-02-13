@@ -12,12 +12,12 @@ import org.apache.commons.io.{FileUtils, IOUtils}
 import org.apache.hadoop
 
 import scala.collection.JavaConversions.asScalaIterator
-
+import com.ddp.access.ScalaSourceParameter
 
 /**
   * Created by cloudera on 9/3/16.
   */
-case class ScalaSourceParameter(srcHdfsPath: String)
+
 
 case class ScalaSourceCompiiler (jclFactory : JclObjectFactory, jcl: JarClassLoader, sourceFiles: ScalaSourceParameter) {
 

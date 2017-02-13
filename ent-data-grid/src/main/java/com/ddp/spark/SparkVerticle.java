@@ -1,7 +1,10 @@
 package com.ddp.spark;
 
+import com.ddp.access.UserClassParameter;
+import com.ddp.access.UserClassRunner;
 import com.ddp.cpybook.CopybookIngestion;
-import com.ddp.cpybook.CopybookIngestionParameter;
+import com.ddp.access.CopybookIngestionParameter;
+import com.ddp.userclass.RunUserClass;
 import com.ddp.util.CustomMessage;
 import com.ddp.util.CustomMessageCodec;
 import com.ddp.util.Runner;
@@ -14,7 +17,6 @@ import org.apache.spark.SparkConf;
 import org.apache.spark.SparkContext;
 import org.apache.spark.api.java.JavaSparkContext;
 import org.apache.spark.sql.SQLContext;
-import org.glassfish.jersey.internal.inject.Custom;
 
 /**
  * Created by cloudera on 2/8/17.
@@ -23,6 +25,7 @@ public class SparkVerticle extends AbstractVerticle{
 
     private SparkContext sparkContext;
     private SQLContext sqlContext;
+
     private Gson gson = new Gson();
 
     public static void main(String argv[]){
@@ -34,6 +37,7 @@ public class SparkVerticle extends AbstractVerticle{
         sparkContext = new SparkContext(conf);
         sqlContext = new SQLContext(sparkContext);
         EventBus eventBus = getVertx().eventBus();
+
         eventBus.registerDefaultCodec(CustomMessage.class, new CustomMessageCodec());
 
         eventBus.consumer(config().getString("eventbus.spark"), message -> {
@@ -50,14 +54,36 @@ public class SparkVerticle extends AbstractVerticle{
 
     private void handleEvent(CustomMessage msg){
 
-        CopybookIngestionParameter a = gson.fromJson(msg.getSummary(), CopybookIngestionParameter.class);
+        switch (msg.getStatusCode())
+        {
+            case 1: {
+                CopybookIngestionParameter a = gson.fromJson(msg.getSummary(), CopybookIngestionParameter.class);
 
-        vertx.executeBlocking(future -> {
-            // Call some blocking API that takes a significant amount of time to return
-            Object result = CopybookIngestion.apply(config().getString("hdfs.conf"), sqlContext, a).run();
-            future.complete(result);
-        }, res -> {
-            System.out.println("The result is: " + res.result());
-        });
+                vertx.executeBlocking(future -> {
+                    // Call some blocking API that takes a significant amount of time to return
+                    Object result = CopybookIngestion.apply(config().getString("hdfs.conf"), sqlContext, a).run();
+                    future.complete(result);
+                }, res -> {
+                    System.out.println("The result is: " + res.result());
+                });
+                break;
+            }
+
+            case 2: {
+                UserClassParameter a = gson.fromJson(msg.getSummary(), UserClassParameter.class);
+
+                vertx.executeBlocking(future -> {
+                    // Call some blocking API that takes a significant amount of time to return
+                    Object result = RunUserClass.apply(jclFactory, jcl, sqlContext, a).run();
+                    future.complete(result);
+                }, res -> {
+                    System.out.println("The result is: " + res.result());
+                });
+                break;
+            }
+
+        }
+
+
     }
 }

@@ -71,15 +71,20 @@ public class SimpleREST extends AbstractVerticle {
                         .allowedHeader("Content-Type")
               );
       //router.route().handler(BodyHandler.create());
-      router.get("/hierarchy").handler(this::handleListHierarchy);
+      router.get("/hierarchy").handler(this::getListHierarchy);
 
-      router.post("/ingestion").handler(this::handleIngestion);
+      router.post("/ingestion").handler(this::postIngestion);
+
+      router.post("/runUserClass").handler(this::postRunUserClass);
+
       //router.route("/*").handler(StaticHandler.create());
 
       vertx.createHttpServer().requestHandler(router::accept).listen(config().getInteger("http.port", 9001));
     }
 
-    private void handleIngestion(RoutingContext routingContext){
+
+
+    private void postIngestion(RoutingContext routingContext){
         // Custom message
         routingContext.request().bodyHandler(new Handler<Buffer>() {
             @Override
@@ -99,7 +104,27 @@ public class SimpleREST extends AbstractVerticle {
 
     }
 
-   private void handleListHierarchy(RoutingContext routingContext){
+    private void postRunUserClass(RoutingContext routingContext){
+        // Custom message
+        routingContext.request().bodyHandler(new Handler<Buffer>() {
+            @Override
+            public void handle(Buffer buffer) {
+
+                CustomMessage clusterWideMessage = new CustomMessage(2, "", buffer.toString());
+                eventBus.send(config().getString("eventbus.spark"), clusterWideMessage, reply -> {
+                    if (reply.succeeded()) {
+                        System.out.println("Received reply: ");
+                    } else {
+                        System.out.println("No reply from cluster receiver");
+                    }
+                });
+
+            }
+        });
+    }
+
+
+    private void getListHierarchy(RoutingContext routingContext){
     HttpServerResponse response = routingContext.response();
     Consumer<Integer> errorHandler = i-> response.setStatusCode(i).end();
     Consumer<String> responseHandler = s-> response.putHeader("content-type", "application/json").end(s);

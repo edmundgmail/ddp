@@ -6,12 +6,11 @@ import org.apache.hadoop
 import org.apache.hadoop.conf.Configuration
 import org.apache.hadoop.fs.{FileSystem, Path}
 import org.xeustechnologies.jcl.{JarClassLoader, JclObjectFactory}
-
+import com.ddp.access.JarParamter
 /**
   * Created by cloudera on 9/3/16.
   */
 
-case class JarParamter(hdfsPaths:String) /*separated with ;*/
 
 case class JarLoader (jclFactory : JclObjectFactory, jcl: JarClassLoader, jarParamter: JarParamter) {
 
