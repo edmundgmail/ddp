@@ -74,8 +74,8 @@ public class SparkVerticle extends AbstractVerticle{
 
                 vertx.executeBlocking(future -> {
                     // Call some blocking API that takes a significant amount of time to return
-                    Object result = RunUserClass.apply(jclFactory, jcl, sqlContext, a).run();
-                    future.complete(result);
+                    //Object result = RunUserClass.apply(jclFactory, jcl, sqlContext, a).run();
+                    //future.complete(result);
                 }, res -> {
                     System.out.println("The result is: " + res.result());
                 });
