@@ -139,11 +139,10 @@ public class SimpleREST extends AbstractVerticle {
 }
 
  private void setUpInitialData() {
-     JsonObject config = new JsonObject()
-             .put("url", config().getString("mysql.url"))
-             .put("driver_class", config().getString("mysql.driver.class"));
-
-     client = JDBCClient.createShared(vertx, config);
+     final JDBCClient client = JDBCClient.createShared(vertx, new JsonObject()
+             .put("url", "jdbc:mysql://localhost:3306/metadata_ddp?user=ddp&password=password")
+             .put("driver_class", "com.mysql.jdbc.Driver")
+             .put("max_pool_size", 30));
 
      dataBrowse = new DataBrowse(client);
      eventBus = getVertx().eventBus();

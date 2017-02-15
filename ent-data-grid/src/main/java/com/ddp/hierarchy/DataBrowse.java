@@ -34,7 +34,7 @@ public class DataBrowse implements IDataBrowse{
 
 
     private void listDataFields(SQLConnection conn, Long entityID,  int pageNum, int pageSize, Consumer<Integer> errorHandler, Consumer<String> responseHandler) {
-        conn.queryWithParams("SELECT datafield_name FROM datafield where dataentity_id=? LIMIT ?, ?", new JsonArray().add(entityID).add(pageNum).add(pageSize), query -> {
+        conn.queryWithParams("SELECT sname FROM datafield where entity_id=? LIMIT ?, ?", new JsonArray().add(entityID).add(pageNum).add(pageSize), query -> {
             if (query.failed()) {
                 errorHandler.accept(500);
             } else {
@@ -49,7 +49,7 @@ public class DataBrowse implements IDataBrowse{
     }
 
     private void listDataEntities(SQLConnection conn, Long sourceID,  int pageNum, int pageSize, Consumer<Integer> errorHandler, Consumer<String> responseHandler) {
-        conn.queryWithParams("SELECT dataentity_name FROM dataentity where datasource_id=? LIMIT ?, ?", new JsonArray().add(sourceID).add(pageNum).add(pageSize), query -> {
+        conn.queryWithParams("SELECT sname FROM dataentity where source_id=? LIMIT ?, ?", new JsonArray().add(sourceID).add(pageNum).add(pageSize), query -> {
             if (query.failed()) {
                 errorHandler.accept(500);
             } else {
@@ -64,7 +64,7 @@ public class DataBrowse implements IDataBrowse{
     }
 
     private void listDataSources(SQLConnection conn,  int pageNum, int pageSize, Consumer<Integer> errorHandler, Consumer<String> responseHandler){
-        conn.queryWithParams("SELECT datasource_name FROM datasource LIMIT ?, ?", new JsonArray().add(pageNum).add(pageSize), query -> {
+        conn.queryWithParams("SELECT sname FROM datasource LIMIT ?, ?", new JsonArray().add(pageNum).add(pageSize), query -> {
             if (query.failed()) {
                 errorHandler.accept(500);
             } else {
