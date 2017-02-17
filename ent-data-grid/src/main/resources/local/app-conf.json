@@ -1,6 +1,6 @@
 {
   "http.port" : 8082,
-  "spark.master":"local[2]",
+  "spark.master":"yarn",
   "spark.appname":"my-spark-app",
   "hdfs.conf" : "hdfs://localhost:8020/",
   "eventbus.spark" : "com.ddp.spark.SparkVerticle",
