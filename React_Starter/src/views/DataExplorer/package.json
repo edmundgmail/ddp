@@ -1,0 +1,6 @@
+{
+  "name": "DataExplorer",
+  "version": "0.0.0",
+  "private": true,
+  "main": "./DataExplorer.js"
+}
