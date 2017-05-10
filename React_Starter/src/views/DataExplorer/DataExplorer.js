@@ -1,60 +1,129 @@
 import React, { Component } from 'react';
-import {Treebeard} from 'react-treebeard';
+import {Treebeard,decorators} from 'react-treebeard';
+import { StyleRoot } from 'radium';
 
-const data = {
-    name: 'root',
-    toggled: true,
-    children: [
-        {
-            name: 'parent',
-            children: [
-                { name: 'child1' },
-                { name: 'child2' }
-            ]
-        },
-        {
-            name: 'loading parent',
-            loading: true,
-            children: []
-        },
-        {
-            name: 'parent',
-            children: [
-                {
-                    name: 'nested parent',
-                    children: [
-                        { name: 'nested child 1' },
-                        { name: 'nested child 2' }
-                    ]
-                }
-            ]
-        }
-    ]
+//import data from './data';
+import styles from './styles';
+import * as filters from './filter';
+
+const HELP_MSG = 'Select A Node To See Its Data Structure Here...';
+var data={name:"root"};
+
+// Example: Customising The Header Decorator To Include Icons
+decorators.Header = (props) => {
+    const style = props.style;
+    const iconType = props.node.level ? ( (props.node.level== 'datasource') ? 'database' : ( props.node.level == 'dataentity' ? 'table' : 'file-o' ) ):'empire';
+    const iconClass = `fa fa-${iconType}`;
+    const iconStyle = { marginRight: '5px' };
+    return (
+        <div style={style.base}>
+            <div style={style.title}>
+                <i className={iconClass} style={iconStyle}/>
+                {props.node.name}
+            </div>
+        </div>
+    );
 };
 
-class DataExplorer extends Component {
+class NodeViewer extends React.Component {
     constructor(props){
         super(props);
-        this.state = {};
+    }
+
+    render(){
+        const style = styles.viewer;
+        let json = "";
+        if(!this.props.node){ json = HELP_MSG; }
+        else
+            json = this.props.node.description;//JSON.stringify(this.props.node, null, 4);
+
+        return (
+            <div style={style.base}>
+                {json}
+            </div>
+        );
+    }
+}
+
+NodeViewer.propTypes = {
+    node: React.PropTypes.object
+};
+
+class DataExplorer extends React.Component {
+    constructor(props){
+        super(props);
+        this.state = {data};
         this.onToggle = this.onToggle.bind(this);
     }
+
+    componentDidMount() {
+        fetch(`http://192.168.56.101:8082/hierarchy`)
+            .then(result=> {
+                if (result.status >= 400) {
+                    throw new Error("Bad response from server");
+                }
+                return result.json();
+            }).then(r=>{
+                data = {name: 'root', children: r};
+                this.setState({data: {name: 'root', children: r}});
+            });
+    }
+
     onToggle(node, toggled){
         if(this.state.cursor){this.state.cursor.active = false;}
         node.active = true;
+        if(!node.children && node.level!='datafield') {
+            var url = "http://192.168.56.101:8082/hierarchy?level="+node.level+"&&id="+node.id;
+            fetch(url)
+                .then(result=> {
+                    if (result.status >= 400) {
+                        throw new Error("Bad response from server");
+                    }
+                    return result.json();
+                }).then(r=>{
+                    node.children=r;
+            });
+        }
         if(node.children){ node.toggled = toggled; }
         this.setState({ cursor: node });
     }
+    onFilterMouseUp(e){
+        const filter = e.target.value.trim();
+        if(!filter){ return this.setState({data}); }
+        var filtered = filters.filterTree(data, filter);
+        filtered = filters.expandFilteredNodes(filtered, filter);
+        this.setState({data: filtered});
+    }
+    render(){
+        return (
+            <StyleRoot>
+                <div style={styles.searchBox}>
+                    <div className="input-group">
+                        <span className="input-group-addon">
+                          <i className="fa fa-search"></i>
+                        </span>
+                        <input type="text"
+                               className="form-control"
+                               placeholder="Search the tree..."
+                               onKeyUp={this.onFilterMouseUp.bind(this)}
+                        />
+                    </div>
+                </div>
+                <div style={styles.component}>
+                    <Treebeard
+                        data={this.state.data}
+                        onToggle={this.onToggle}
+                        decorators={decorators}
+                    />
+                </div>
+                <div style={styles.component}>
+                    <NodeViewer node={this.state.cursor}/>
+                </div>
 
-    render() {
-    return (
-      <div className="animated fadeIn">
-          <Treebeard
-              data={data}
-              onToggle={this.onToggle}
-          />
-      </div>
-    )
-  }
+            </StyleRoot>
+
+        );
+    }
 }
 
 export default DataExplorer;
