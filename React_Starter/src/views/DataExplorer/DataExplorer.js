@@ -1,6 +1,8 @@
 import React, { Component } from 'react';
 import {Treebeard,decorators} from 'react-treebeard';
 import { StyleRoot } from 'radium';
+import { Button, Modal, ModalHeader, ModalBody, ModalFooter } from 'reactstrap';
+
 
 //import data from './data';
 import styles from './styles';
@@ -52,12 +54,18 @@ NodeViewer.propTypes = {
 class DataExplorer extends React.Component {
     constructor(props){
         super(props);
-        this.state = {data};
+        this.state = {
+            modal: false,
+            level: 'Data Source',
+            data:[]
+        };
         this.onToggle = this.onToggle.bind(this);
+        this.toggle = this.toggle.bind(this);
+
     }
 
     componentDidMount() {
-        fetch(`http://192.168.56.101:8082/hierarchy`)
+        fetch(`http://192.168.1.130:8082/hierarchy`)
             .then(result=> {
                 if (result.status >= 400) {
                     throw new Error("Bad response from server");
@@ -69,11 +77,21 @@ class DataExplorer extends React.Component {
             });
     }
 
+    toggle() {
+
+        if(this.state.cursor && (!this.state.cursor.level  || this.state.cursor.level == 'datasource'))
+        {
+            this.setState({
+                modal: !this.state.modal
+            });
+        }
+    }
+
     onToggle(node, toggled){
         if(this.state.cursor){this.state.cursor.active = false;}
         node.active = true;
         if(!node.children && node.level!='datafield') {
-            var url = "http://192.168.56.101:8082/hierarchy?level="+node.level+"&&id="+node.id;
+            var url = "http://192.168.1.130:8082/hierarchy?level="+node.level+"&&id="+node.id;
             fetch(url)
                 .then(result=> {
                     if (result.status >= 400) {
@@ -95,8 +113,18 @@ class DataExplorer extends React.Component {
         this.setState({data: filtered});
     }
     render(){
-        return (
+        var addnew;
+        if(this.state.cursor && this.state.cursor.level=='dataentity'){
+            addnew= <ModalHeader toggle={this.toggle}>Add New Data Entity</ModalHeader>
+        }
+            else{
+            addnew=<ModalHeader toggle={this.toggle}>Add New Data Source</ModalHeader>
+        }
+
+
+            return (
             <StyleRoot>
+                <div className="row">
                 <div style={styles.searchBox}>
                     <div className="input-group">
                         <span className="input-group-addon">
@@ -108,7 +136,23 @@ class DataExplorer extends React.Component {
                                onKeyUp={this.onFilterMouseUp.bind(this)}
                         />
                     </div>
+
                 </div>
+                    <div className="card-block">
+                        <Button onClick={this.toggle}>+</Button>
+                        <Modal isOpen={this.state.modal} toggle={this.toggle} className={this.props.className}>
+                            {addnew}
+                            <ModalBody>
+                                Lorem ipsum dolor sit amet, consectetur adipisicing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum.
+                            </ModalBody>
+                            <ModalFooter>
+                                <Button color="primary" onClick={this.toggle}>Do Something</Button>{' '}
+                                <Button color="secondary" onClick={this.toggle}>Cancel</Button>
+                            </ModalFooter>
+                        </Modal>
+                    </div>
+                </div>
+                <div className="row">
                 <div style={styles.component}>
                     <Treebeard
                         data={this.state.data}
@@ -116,10 +160,12 @@ class DataExplorer extends React.Component {
                         decorators={decorators}
                     />
                 </div>
+
                 <div style={styles.component}>
                     <NodeViewer node={this.state.cursor}/>
                 </div>
 
+                </div>
             </StyleRoot>
 
         );
