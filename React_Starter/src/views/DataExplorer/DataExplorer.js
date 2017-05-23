@@ -10,12 +10,12 @@ import Globals from '../Globals';
 import AddNewDataModal from '../../components/AddNewDataModal';
 
 const HELP_MSG = 'Select A Node To See Its Data Structure Here...';
-var data={name:"root",level:"root"};
+var data={name:"root",level:"root", children:null};
 
 // Example: Customising The Header Decorator To Include Icons
 decorators.Header = (props) => {
     const style = props.style;
-    const iconType = props.node.level ? ( (props.node.level== 'datasource') ? 'database' : ( props.node.level == 'dataentity' ? 'table' : 'file-o' ) ):'empire';
+    const iconType = props.node.level==='root' ? 'empire' : ( (props.node.level=== 'datasource') ? 'database' : ( props.node.level === 'dataentity' ? 'table' : 'file-o' ) );
     const iconClass = `fa fa-${iconType}`;
     const iconStyle = { marginRight: '5px' };
     return (
@@ -72,7 +72,7 @@ class DataExplorer extends React.Component {
                 }
                 return result.json();
             }).then(r=>{
-                data = {name: 'root', level:'root', children: r};
+                data.children=r;// = {name: 'root', level:'root', children: r};
                 this.setState({data: data});
             });
     }
