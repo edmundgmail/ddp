@@ -10,7 +10,7 @@ import Globals from '../Globals';
 import AddNewDataModal from '../../components/AddNewDataModal';
 
 const HELP_MSG = 'Select A Node To See Its Data Structure Here...';
-var data={name:"root"};
+var data={name:"root",level:"root"};
 
 // Example: Customising The Header Decorator To Include Icons
 decorators.Header = (props) => {
@@ -56,7 +56,7 @@ class DataExplorer extends React.Component {
     constructor(props){
         super(props);
         this.state = {
-            level: 'datasource',
+            level: 'root',
             data:data
         };
         this.onToggle = this.onToggle.bind(this);
@@ -72,7 +72,7 @@ class DataExplorer extends React.Component {
                 }
                 return result.json();
             }).then(r=>{
-                data = {name: 'root', children: r};
+                data = {name: 'root', level:'root', children: r};
                 this.setState({data: data});
             });
     }
@@ -95,7 +95,7 @@ class DataExplorer extends React.Component {
             });
         }
         if(node.children){ node.toggled = toggled; }
-        this.setState({ cursor: node });
+        this.setState({ cursor: node, level : node.level });
     }
     onFilterMouseUp(e){
         const filter = e.target.value.trim();
@@ -121,6 +121,7 @@ class DataExplorer extends React.Component {
                     </div>
 
                 </div>
+                    <AddNewDataModal level = {this.state.level}/>
                 </div>
                 <div className="row">
                 <div style={styles.component}>
