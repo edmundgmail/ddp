@@ -56,15 +56,32 @@ class DataExplorer extends React.Component {
     constructor(props){
         super(props);
         this.state = {
-            level: 'root',
-            data:data
+            level: '',
+            data:data,
+            modal:false
         };
         this.onToggle = this.onToggle.bind(this);
         this.handleNewData=this.handleNewData.bind(this);
+        this.toggle = this.toggle.bind(this);
+
+    }
+
+    toggle() {
+        this.setState({modal: !this.state.modal});
     }
 
     handleNewData(e){
-        alert(e);
+        if(e.name && e.name !== ''){
+            const node = this.state.cursor;
+            if(node.children) node.children.push(e);
+            else node.children=[e];
+            let children = filters.findDataNode(data, node.level, node.id).children;
+            if(children)children.push(e);
+            else children=[e];
+            this.setState({ cursor: node, level : node.level, data:data });
+
+        }
+
     }
 
     componentDidMount() {
@@ -81,11 +98,10 @@ class DataExplorer extends React.Component {
             });
     }
 
-
-
     onToggle(node, toggled){
         if(this.state.cursor){this.state.cursor.active = false;}
         node.active = true;
+
         if(!node.children && node.level!='datafield') {
             var url = Globals.urlHierarchy+"?level="+node.level+"&&id="+node.id;
             fetch(url)
@@ -126,7 +142,14 @@ class DataExplorer extends React.Component {
                     </div>
 
                 </div>
-                    <AddNewDataModal level = {this.state.level} onDataChange={this.handleNewData}/>
+
+                    <div className="card-block">
+                        <button type="button" disabled={this.state.level!=='root' && this.state.level!=='datasource'} className="btn btn-primary" onClick={this.toggle}>Add New</button>
+                        <button type="button" className="btn btn-primary">Primary</button>
+                        <button type="button" className="btn btn-primary">Primary2</button>
+                    </div>
+                    <AddNewDataModal level={this.state.level} isOpen={this.state.modal} onDataChange={this.handleNewData} onHide={this.toggle}/>
+
                 </div>
                 <div className="row">
                 <div style={styles.component}>
