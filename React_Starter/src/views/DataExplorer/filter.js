@@ -1,6 +1,11 @@
 'use strict';
 
 // Helper functions for filtering
+export const findDataNode = (node, level, id) => {
+    if(node && node.level === level && node.id === id) return node;
+    else if(node.children) node.children.find(child=>findDataNode(child, level, id));
+};
+
 export const defaultMatcher = (filterText, node) => {
     return node.name.toLowerCase().indexOf(filterText.toLowerCase()) !== -1;
 };
