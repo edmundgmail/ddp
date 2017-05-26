@@ -1,9 +1,29 @@
 'use strict';
 
+export const dataMatcher = (id, level, node) => {
+    return (node.id === id) && (!level || node.level === level);
+};
+
 // Helper functions for filtering
 export const findDataNode = (node, level, id) => {
-    if(node && node.level === level && node.id === id) return node;
-    else if(node.children) node.children.find(child=>findDataNode(child, level, id));
+    if(dataMatcher(id, level, node)) return node;
+    else if(node.children){
+        for(var i=0;i<node.children.length;i++)
+        {
+            var snode = node.children[i];
+            if(dataMatcher( id, level, snode)){
+                return snode;
+            }
+            else if(snode.children){
+                for(var j=0; j<snode.children.length;j++){
+                    var enode=snode.children[j];
+                    if(dataMatcher(id, level, enode))
+                        return enode;
+                }
+            }
+        }
+    }
+    return null;
 };
 
 export const defaultMatcher = (filterText, node) => {

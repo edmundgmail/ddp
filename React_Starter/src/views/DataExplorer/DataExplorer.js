@@ -58,12 +58,13 @@ class DataExplorer extends React.Component {
         this.state = {
             level: '',
             data:data,
-            modal:false
+            modal:false,
+            changed: false
         };
         this.onToggle = this.onToggle.bind(this);
         this.handleNewData=this.handleNewData.bind(this);
         this.toggle = this.toggle.bind(this);
-
+        this.saveNew=this.saveNew.bind(this);
     }
 
     toggle() {
@@ -78,10 +79,43 @@ class DataExplorer extends React.Component {
             let children = filters.findDataNode(data, node.level, node.id).children;
             if(children)children.push(e);
             else children=[e];
-            this.setState({ cursor: node, level : node.level, data:data });
+            this.setState({ cursor: node, changed: true, level : node.level, data:data });
 
         }
+    }
 
+    saveNew(){
+        let node=filters.findDataNode(data, null, -1);
+        if(node){
+            alert("found it");
+            fetch(Globals.urlHierarchy, {
+                method: 'POST',
+                headers: {
+                    'Accept': 'application/json',
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({
+                    sessionKey: 123,
+                    needPadding: false,
+                    parameter: {
+                        className : "com.ddp.access.NewDataSourceParameter",
+                        level:node.level,
+                        name : node.name,
+                        desc: node.description,
+                        sourceId: node.level==='datasource'? 0 : node.sourceId
+                    }
+                })
+            })
+            .then(result=> {
+                if (result.status >= 400) {
+                    throw new Error("Bad response from server");
+                }
+                return result.json();
+            }).then(r=>{
+                node.id=r.id;
+                this.setState({changed:false});
+            });
+        }
     }
 
     componentDidMount() {
@@ -144,9 +178,9 @@ class DataExplorer extends React.Component {
                 </div>
 
                     <div className="card-block">
-                        <button type="button" disabled={this.state.level!=='root' && this.state.level!=='datasource'} className="btn btn-primary" onClick={this.toggle}>Add New</button>
-                        <button type="button" className="btn btn-primary">Primary</button>
-                        <button type="button" className="btn btn-primary">Primary2</button>
+                        <button type="button" disabled={this.state.changed || (this.state.level!=='root' && this.state.level!=='datasource')} className="btn btn-primary" onClick={this.toggle}>Add New</button>
+                        <button type="button" disabled={!this.state.changed} className="btn btn-primary" onClick={this.saveNew}>Save</button>
+                        <button type="button" disabled={this.state.level!=='dataentity' || this.state.cursor.id!==-1} className="btn btn-primary">Load New Entity</button>
                     </div>
                     <AddNewDataModal level={this.state.level} isOpen={this.state.modal} onDataChange={this.handleNewData} onHide={this.toggle}/>
 
