@@ -8,6 +8,9 @@ import styles from './styles';
 import * as filters from './filter';
 import Globals from '../Globals';
 import AddNewDataModal from '../../components/AddNewDataModal';
+import routes from '../../routes';
+import { Router, Route, IndexRoute, hashHistory } from 'react-router';
+
 
 const HELP_MSG = 'Select A Node To See Its Data Structure Here...';
 var data={id: 0, name:"root",level:"root", children:null};
@@ -61,14 +64,23 @@ class DataExplorer extends React.Component {
             modal:false,
             changed: false
         };
+
         this.onToggle = this.onToggle.bind(this);
         this.handleNewData=this.handleNewData.bind(this);
         this.toggle = this.toggle.bind(this);
         this.saveNew=this.saveNew.bind(this);
+        this.loadDataEntity=this.loadDataEntity.bind(this);
+
     }
 
     toggle() {
         this.setState({modal: !this.state.modal});
+    }
+
+    loadDataEntity(){
+        alert(this.state.cursor.name);
+        alert(this.state.cursor.sourceId);
+        hashHistory.push('/loadentity?sourceId='+this.state.cursor.sourceId+"&&entityId="+this.state.cursor.id);
     }
 
     handleNewData(e){
@@ -180,7 +192,7 @@ class DataExplorer extends React.Component {
                     <div className="card-block">
                         <button type="button" disabled={this.state.changed || (this.state.level!=='root' && this.state.level!=='datasource')} className="btn btn-primary" onClick={this.toggle}>Add New</button>
                         <button type="button" disabled={!this.state.changed} className="btn btn-primary" onClick={this.saveNew}>Save</button>
-                        <button type="button" disabled={this.state.level!=='dataentity' || this.state.cursor.id!==-1} className="btn btn-primary">Load New Entity</button>
+                        <button type="button" disabled={this.state.level!=='dataentity' || this.state.cursor.children || !this.state.cursor.active} className="btn btn-primary" onClick={this.loadDataEntity}>Load New Entity</button>
                     </div>
                     <AddNewDataModal level={this.state.level} isOpen={this.state.modal} onDataChange={this.handleNewData} onHide={this.toggle}/>
 
