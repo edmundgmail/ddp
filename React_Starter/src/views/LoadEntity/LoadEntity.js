@@ -65,13 +65,21 @@ class LoadEntity extends Component {
             });
         }
 
-       // reader.readAsDataURL(file)
+       reader.readAsDataURL(file)
     }
 
-    handleSubmit(){
+    handleSubmit(e){
+        e.preventDefault();
+        var formData = new FormData();
+        formData.append('csv', this.state.file,"tempTable")
 
+        fetch(Globals.urlPostSampleFile, {
+            method: 'POST',
+            body: formData
+        }).then(function (response) {
+            alert(response);
+        });
     }
-
     render(){
       //alert(this.props.params.sourceId);
       //alert(this.props.params.id);
@@ -99,21 +107,22 @@ class LoadEntity extends Component {
                     </div>
 
                     <div className="form-group row">
+                        <label className="col-md-2 form-control-label" htmlFor="text-input">Select File</label>
+                        <div className="col-md-6">
+                                <input type='file' onChange={this.onAddFile}/>
+                                <button type="submit" onClick={this.handleSubmit}>Upload File</button>
+                        </div>
+                    </div>
+
+                    <div className="form-group row">
                         <label className="col-md-2 form-control-label" htmlFor="text-input">Select File Type</label>
                         <div className="col-md-6">
                             <select className="form-control" id="entities">
-                               <option>csv</option>
+                                <option>csv</option>
                                 <option>xml</option>
                                 <option>json</option>
                                 <option>copybook</option>
                             </select>
-                        </div>
-                    </div>
-                    <div className="form-group row">
-                        <label className="col-md-2 form-control-label" htmlFor="text-input">Select File</label>
-                        <div className="col-md-6">
-                            <input type='file' onChange={this.onAddFile}/>
-                            <button type="submit" onClick={this.handleSubmit}>Upload File</button>
                         </div>
                     </div>
 

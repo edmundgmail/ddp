@@ -1,13 +1,8 @@
 import React,{Component} from 'react';
 
 class Globals  extends React.Component{
-      static  urlHierarchy =
-            'http://192.168.56.101:8082/hierarchy';
-
-
-    render() {
-
-    }
+      static  urlHierarchy = 'http://localhost:8082/hierarchy';
+      static  urlPostSampleFile = 'http://localhost:8082/postSampleFiles';
 }
 
 export default Globals;
