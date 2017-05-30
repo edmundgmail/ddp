@@ -1,6 +1,8 @@
 import React, { Component } from 'react';
-import Globals from '../Globals';
+import {Table} from 'reactable';
 
+import Globals from '../Globals';
+import DynamicTable from "../../components/DynamicTable/DynamicTable";
 
 class LoadEntity extends Component {
     constructor(props) {
@@ -8,7 +10,8 @@ class LoadEntity extends Component {
         this.state = {
             level: '',
             options: [],
-            entityOptions:[]
+            entityOptions:[],
+            tableData:[{"name":"guo","age":4}]
         };
 
         this.changeSource=this.changeSource.bind(this);
@@ -76,8 +79,13 @@ class LoadEntity extends Component {
         fetch(Globals.urlPostSampleFile, {
             method: 'POST',
             body: formData
-        }).then(function (response) {
-            alert(response);
+        }).then(result=> {
+            if (result.status >= 400) {
+                throw new Error("Bad response from server");
+            }
+            return result.json();
+        }).then(r=>{
+            this.setState({tableData:JSON.parse(r)})
         });
     }
     render(){
@@ -125,6 +133,11 @@ class LoadEntity extends Component {
                             </select>
                         </div>
                     </div>
+
+                    <Table
+                        className="table"
+                        id="table" data={this.state.tableData}
+                        noDataText="No matching records found." />
 
                 </form>
             </div>
