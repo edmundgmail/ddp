@@ -2,7 +2,6 @@ import React, { Component } from 'react';
 import {Table} from 'reactable';
 
 import Globals from '../Globals';
-import DynamicTable from "../../components/DynamicTable/DynamicTable";
 
 class LoadEntity extends Component {
     constructor(props) {
@@ -11,10 +10,13 @@ class LoadEntity extends Component {
             level: '',
             options: [],
             entityOptions:[],
-            tableData:[{"name":"guo","age":4}]
+            dataSource:'',
+            dataEntity:'',
+            tableData:[],
         };
 
         this.changeSource=this.changeSource.bind(this);
+        this.changeEntity=this.changeEntity.bind(this);
         this.loadEntities=this.loadEntities.bind(this);
         this.onAddFile=this.onAddFile.bind(this);
         this.handleSubmit=this.handleSubmit.bind(this);
@@ -29,8 +31,8 @@ class LoadEntity extends Component {
                     return result.json();
                 }).then(r=>{
                 if(r.length>0){
-                    this.setState({options: r.map(s=>( <option key={s.id} value={s.name}>{s.name}</option>))});
                     this.loadEntities(r[0].id);
+                    this.setState({options: r.map(s=>( <option key={s.id} value={s.name}>{s.name}</option>)), dataSource:r[0].name});
                 }
             });
     }
@@ -43,17 +45,18 @@ class LoadEntity extends Component {
                 }
                 return result.json();
             }).then(r=>{
-            this.setState({entityOptions: r.map(s=>( <option key={s.id} value={s.name}>{s.name}</option>))});
+            this.setState({entityOptions: r.map(s=>( <option key={s.id} value={s.name}>{s.name}</option>)), dataEntity:r[0].name});
         });
     }
 
     changeEntity(e){
-
+        this.setState({dataEntity:e.target.value})
     }
 
     changeSource(e){
-        let id = this.state.options.filter(o=>o.props.value===e.target.value)[0].key
-        this.loadEntities(id);
+        let v = this.state.options.filter(o=>o.props.value===e.target.value)[0];
+        this.setState({dataSource:v.props.value});
+        this.loadEntities(v.key);
     }
 
     onAddFile(e){
@@ -74,7 +77,7 @@ class LoadEntity extends Component {
     handleSubmit(e){
         e.preventDefault();
         var formData = new FormData();
-        formData.append('csv', this.state.file,"tempTable")
+        formData.append('csv', this.state.file, this.state.dataSource + "." + this.state.dataEntity )
 
         fetch(Globals.urlPostSampleFile, {
             method: 'POST',
@@ -85,7 +88,7 @@ class LoadEntity extends Component {
             }
             return result.json();
         }).then(r=>{
-            this.setState({tableData:JSON.parse(r)})
+            this.setState({tableData:r.result})
         });
     }
     render(){
@@ -99,7 +102,7 @@ class LoadEntity extends Component {
                     <div className="form-group row">
                         <label className="col-md-2 form-control-label" htmlFor="text-input">Select Source</label>
                         <div className="col-md-6">
-                            <select className="form-control" id="sources" onChange={this.changeSource} value={this.state.source}>
+                            <select className="form-control" id="sources" onChange={this.changeSource}>
                                 {this.state.options}
                             </select>
                         </div>
@@ -108,7 +111,7 @@ class LoadEntity extends Component {
                     <div className="form-group row">
                         <label className="col-md-2 form-control-label" htmlFor="text-input">Select Entity</label>
                         <div className="col-md-6">
-                            <select className="form-control" id="entities">
+                            <select className="form-control" id="entities" onChange={this.changeEntity}  >
                                 {this.state.entityOptions}
                             </select>
                         </div>
