@@ -1,6 +1,5 @@
 import React, { Component } from 'react';
 import {Table} from 'reactable';
-
 import Globals from '../Globals';
 
 class LoadEntity extends Component {
@@ -23,29 +22,31 @@ class LoadEntity extends Component {
     }
 
     componentDidMount() {
-            fetch(Globals.urlHierarchy)
+            fetch(Globals.urlHiveHierarchy)
                 .then(result=> {
                     if (result.status >= 400) {
                         throw new Error("Bad response from server");
                     }
                     return result.json();
-                }).then(r=>{
+                }).then(res=>{
+                 let r = res.result;
                 if(r.length>0){
-                    this.loadEntities(r[0].id);
-                    this.setState({options: r.map(s=>( <option key={s.id} value={s.name}>{s.name}</option>)), dataSource:r[0].name});
+                    this.loadEntities(r[0].databaseName);
+                    this.setState({options: r.map(s=>( <option key={s.databaseName} value={s.databaseName}>{s.databaseName}</option>)), dataSource:r[0].databaseName});
                 }
             });
     }
 
-    loadEntities(id){
-        fetch(Globals.urlHierarchy+"?level=datasource&&id="+id)
+    loadEntities(databaseName){
+        fetch(Globals.urlHiveHierarchy+"?level=datasource&&name="+databaseName)
             .then(result=> {
                 if (result.status >= 400) {
                     throw new Error("Bad response from server");
                 }
                 return result.json();
-            }).then(r=>{
-            this.setState({entityOptions: r.map(s=>( <option key={s.id} value={s.name}>{s.name}</option>)), dataEntity:r[0].name});
+            }).then(res=>{
+                let r=res.result;
+            this.setState({entityOptions: r.map(s=>( <option key={s.tableName} value={s.tableName}>{s.tableName}</option>)), dataEntity:r[0].tableName});
         });
     }
 
