@@ -1,12 +1,11 @@
 import React, { Component } from 'react';
 import { Button, Modal, ModalHeader, ModalBody, ModalFooter } from 'reactstrap';
 
-class AddNewDataModal extends Component {
+class AddNewReportModal extends Component {
     constructor(props){
         super(props);
         this.state={
-            name: '',
-            desc:''
+            name: ''
         };
         this.toggle = this.toggle.bind(this);
         this.onSubmit = this.onSubmit.bind(this);
@@ -18,9 +17,8 @@ class AddNewDataModal extends Component {
     }
 
     onSubmit(){
-        const level = (this.props.level==='datasource') ? 'dataentity' : (this.props.level === 'root' ? 'datasource' : null);
-        var d = {id: -1, name: this.state.name, description: this.state.desc, level: level};
-        this.props.onDataChange(d);
+        const level = (this.props.level==='root') ? 'New Owner' : (this.props.level === 'owner' ? 'New Report' : 'New File');
+        this.props.onDataChange(this.state.name);
         this.toggle();
     }
 
@@ -30,7 +28,7 @@ class AddNewDataModal extends Component {
     }
 
   render() {
-      const level = (this.props.level==='datasource') ? 'Data Entity' : (this.props.level === 'root' ? 'Data Source' : null);
+      const level = (this.props.level==='root') ? 'New Owner' : (this.props.level === 'owner' ? 'New Report' : 'New File');
       if(!level) return null;
       const { active } = this.props;
 
@@ -39,11 +37,10 @@ class AddNewDataModal extends Component {
 
         <div>
           <Modal isOpen={this.props.isOpen} toggle={this.toggle} className={this.props.className}>
-              <ModalHeader toggle={this.toggle}>Add New {level}</ModalHeader>
+              <ModalHeader toggle={this.toggle}>Add {level}</ModalHeader>
             <ModalBody>
                 <div className="form-group">
                     <input type="text" className="form-control" id="name"  onChange={this.handleChange.bind(this, 'name')}  value={this.state.name} placeholder='Enter name'/>
-                    <input type="text" className="form-control" id="desc"  onChange={this.handleChange.bind(this, 'desc')} value={this.state.desc} placeholder='Enter Description'/>
                 </div>
             </ModalBody>
             <ModalFooter>

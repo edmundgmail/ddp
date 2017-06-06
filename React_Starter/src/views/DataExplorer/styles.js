@@ -18,10 +18,10 @@ export default {
         base: {
             fontSize: '12px',
             whiteSpace: 'pre-wrap',
-            backgroundColor: '#87CEEB',
+            backgroundColor: 'default',
             border: 'solid 1px black',
             padding: '20px',
-            color: '#ffffff',
+            color: '#222222',
             minHeight: '250px'
         }
     }

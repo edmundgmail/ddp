@@ -8,6 +8,7 @@ import Full from './containers/Full/'
 import Dashboard from './views/Dashboard/'
 import DataExplorer from './views/DataExplorer/'
 import LoadEntity from './views/LoadEntity/'
+import DataManipulation from './views/DataManipulation/'
 
 export default (
   <Router history={hashHistory}>
@@ -16,6 +17,7 @@ export default (
       <Route path="dashboard" name="Dashboard" component={Dashboard}/>
         <Route path="dataexplorer" name="DataExplorer" component={DataExplorer}/>
         <Route path="loadentity" name="LoadEntity" component={LoadEntity}/>
+        <Route path="datamanipulation" name="DataManipulation" component={DataManipulation}/>
     </Route>
   </Router>
 );

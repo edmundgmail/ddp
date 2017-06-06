@@ -1,14 +1,20 @@
 import React, { Component } from 'react';
 
-class Dashboard extends Component {
 
-  render() {
-    return (
-      <div className="animated fadeIn">
-        Hello World
-      </div>
-    )
-  }
+class Dashboard extends React.Component {
+    constructor(props) {
+        super(props);
+
+        this.state = {
+
+        };
+    }
+
+    render() {
+        return (
+        <div>hello</div>
+        );
+    }
 }
 
-export default Dashboard;
+module.exports = Dashboard;

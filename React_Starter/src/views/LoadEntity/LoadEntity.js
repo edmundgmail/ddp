@@ -2,6 +2,8 @@ import React, { Component } from 'react';
 import {Table} from 'reactable';
 import Globals from '../Globals';
 
+import ReactScrollbar from 'react-scrollbar-js';
+
 class LoadEntity extends Component {
     constructor(props) {
         super(props);
@@ -24,6 +26,10 @@ class LoadEntity extends Component {
         this.toggleNewSource = this.toggleNewSource.bind(this);
         this.handleDataSourceChangeEvent = this.handleDataSourceChangeEvent.bind(this);
         this.createNewSource = this.createNewSource.bind(this);
+        this.toggleNewEntity = this.toggleNewEntity.bind(this);
+        this.handleDataEntityChangeEvent = this.handleDataEntityChangeEvent.bind(this);
+        this.createNewEntity = this.createNewEntity.bind(this);
+
     }
 
     createNewEntity(e){
@@ -157,6 +163,10 @@ class LoadEntity extends Component {
 
 
     render(){
+        const myScrollbar = {
+            width: 400,
+            height: 400,
+        };
       //alert(this.props.params.sourceId);
       //alert(this.props.params.id);
       return (
@@ -211,10 +221,12 @@ class LoadEntity extends Component {
                         </div>
                     </div>
 
+                    <ReactScrollbar>
                     <Table
-                        className="table"
+                        className="table table-hover table-condensed"
                         id="table" data={this.state.tableData}
                         noDataText="No matching records found." />
+                    </ReactScrollbar>
 
                 </form>
             </div>
