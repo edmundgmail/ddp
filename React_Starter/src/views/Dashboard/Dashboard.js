@@ -1,4 +1,5 @@
 import React, { Component } from 'react';
+import Globals from '../Globals'
 
 
 class Dashboard extends React.Component {
@@ -12,7 +13,7 @@ class Dashboard extends React.Component {
 
     render() {
         return (
-        <div>hello</div>
+        <div>{Globals.urlHierarchy}</div>
         );
     }
 }

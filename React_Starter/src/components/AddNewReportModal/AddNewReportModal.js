@@ -53,4 +53,4 @@ class AddNewReportModal extends Component {
   }
 }
 
-export default AddNewDataModal;
+export default AddNewReportModal;
