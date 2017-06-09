@@ -1,11 +1,11 @@
 import React, { Component } from 'react';
 import {Table} from 'reactable';
-import Globals from '../Globals';
+import Globals from '../Globals/Globals.js';
 import AddNewReportModal from '../../components/AddNewReportModal';
 import {Treebeard,decorators} from 'react-treebeard';
 import Textarea from 'react-textarea-autosize';
 
-var data={name: 'root' , level : 'root'};
+var data={name: 'root' , level : 'root', id: 0};
 
 
 var myHeader = (props) => {
@@ -23,7 +23,7 @@ var myHeader = (props) => {
     );
 };
 
-class DataManipulation extends Component {
+class DataManipulation extends React.Component {
     constructor(props) {
         super(props);
         this.state= {
@@ -31,7 +31,8 @@ class DataManipulation extends Component {
             level: 'root',
             modal:false,
             changed:false,
-            newdata:null,
+            newData:null,
+            newParent:null,
             content:''
         };
         this.onToggle = this.onToggle.bind(this);
@@ -43,26 +44,81 @@ class DataManipulation extends Component {
     }
 
     componentDidMount() {
-        fetch(Globals.urlUserFunctionHierarchy)
+        fetch(Globals.urlUserFunctionHierarchy )
             .then(result=> {
                 if (result.status >= 400) {
                     throw new Error("Bad response from server");
                 }
                 return result.json();
             }).then(res=>{
-            let r = res.result;
-            if(r.length>0){
-                data.children=r;
-            }
+                data.children=res;
         });
     }
 
 
     saveNew(){
-        if(this.state.changed){
-
+        if(this.state.textChanged){
+            const node = this.state.cursor;
+            fetch(Globals.urlUserFunctionHierarchy, {
+                method: 'POST',
+                headers: {
+                    'Accept': 'application/json',
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({
+                    sessionKey: 123,
+                    needPadding: false,
+                    parameter: {
+                        className : "com.ddp.access.UserScriptParameter",
+                        action:"add",
+                        level:node.level,
+                        name : node.name,
+                        id: node.id,
+                        parentId: 0,
+                        content: this.state.content
+                    }
+                })
+            })
+                .then(result=> {
+                    if (result.status >= 400) {
+                        throw new Error("Bad response from server");
+                    }
+                    return result.json();
+                }).then(r=>{
+                this.setState({textChanged:false});
+            });
         }
-        this.setState({changed: false, newData: null, textChanged:false});
+        else if(this.state.changed){
+            fetch(Globals.urlUserFunctionHierarchy, {
+                method: 'POST',
+                headers: {
+                    'Accept': 'application/json',
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({
+                    sessionKey: 123,
+                    needPadding: false,
+                    parameter: {
+                        className : "com.ddp.access.UserScriptParameter",
+                        action:"add",
+                        level:this.state.newData.level,
+                        name : this.state.newData.name,
+                        id: this.state.newData.id,
+                        parentId: this.state.newParent.id,
+                        content: this.state.content
+                    }
+                })
+            })
+                .then(result=> {
+                    if (result.status >= 400) {
+                        throw new Error("Bad response from server");
+                    }
+                    return result.json();
+                }).then(r=>{
+                alert(r);
+                this.setState({changed:false, newParent:null, newData:null});
+            });
+        }
     }
 
     onChange(e){
@@ -81,11 +137,11 @@ class DataManipulation extends Component {
             const node = this.state.cursor;
 
             let level = this.state.level==='root'? 'owner' : (this.state.level==='owner'? 'report' : 'file');
-            let newData = {name: e, level: level};
+            let newData = {name: e, level: level, id: -1};
             if(node.children) node.children.push(newData);
             else node.children=[newData];
 
-            this.setState({ cursor: node, changed: true, level : node.level, data:data, data, newdata: newData });
+            this.setState({ cursor: node, changed: true, level : node.level, data:data, data, newData: newData, newParent:node });
 
         }
     }
@@ -94,9 +150,40 @@ class DataManipulation extends Component {
             this.state.cursor.active = false;
         }
         node.active = true;
+
+        if(!node.children) {
+            var url = Globals.urlUserFunctionHierarchy+"?level="+node.level+"&&id="+node.id;
+            fetch(url)
+                .then(result=> {
+                    if (result.status >= 400) {
+                        throw new Error("Bad response from server");
+                    }
+                    return result.json();
+                }).then(r=>{
+                    if(node.level==='file') {
+                        if (r.length > 0) {
+                            node = r[0];
+                            this.setState({content: node.content});
+                        }
+                    }
+                    else
+                        node.children=r;
+                //filters.findDataNode(data, node.level, node.id).children=r;
+            });
+        }
+
         if(node.children){ node.toggled = toggled; }
 
         this.setState({ cursor: node, level: node.level, content: this.state.level==='file'? node.content : '' });
+    }
+
+    removeNode(){
+        const node = this.state.cursor;
+        let ans = alert("Node level = " ^ node.level ^ ", name=" ^ node.name ^ ", all children will be removed too. Are you sure to proceed the removal?")
+        if(ans)
+        {
+
+        }
     }
 
 
@@ -117,7 +204,8 @@ class DataManipulation extends Component {
                       <div>
                           <Treebeard data={this.state.data} onToggle={this.onToggle} decorators={decorators}/>
                           <div className="card-block">
-                              <button onClick={this.toggle} disabled={this.state.changed || (this.state.level!=='root' && this.state.level!=='owner' && this.state.level!=='report')}>Add</button>
+                              <button onClick={this.toggle} disabled={this.state.changed || this.state.level==='file'}>Add</button>
+                              <button onClick={this.removeNode} disabled={this.state.changed || this.state.level==='root'}>Remove</button>
                               <button disabled={!this.state.changed && !this.state.textChanged} onClick={this.saveNew}>Save</button>
                               <AddNewReportModal level={this.state.level} isOpen={this.state.modal} onHide={this.toggle} onDataChange={this.handleNewData}/>
                           </div>

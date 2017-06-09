@@ -1,6 +1,6 @@
 import React, { Component } from 'react';
 import {Table} from 'reactable';
-import Globals from '../Globals';
+import Globals from '../Globals/Globals.js';
 
 import ReactScrollbar from 'react-scrollbar-js';
 

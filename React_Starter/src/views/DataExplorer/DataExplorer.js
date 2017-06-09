@@ -6,7 +6,7 @@ import { Button, Modal, ModalHeader, ModalBody, ModalFooter } from 'reactstrap';
 //import data from './data';
 import styles from './styles';
 import * as filters from './filter';
-import Globals from '../Globals';
+import Globals from '../Globals/Globals.js';
 import AddNewDataModal from '../../components/AddNewDataModal';
 import routes from '../../routes';
 import { Router, Route, IndexRoute, hashHistory } from 'react-router';
