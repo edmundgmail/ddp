@@ -41,7 +41,7 @@ class DataManipulation extends React.Component {
         this.onChange = this.onChange.bind(this);
         this.saveNew = this.saveNew.bind(this);
         this.removeNode = this.removeNode.bind(this);
-        this.uploadReport = this.uploadReport.bind(this);
+        this.compileReport = this.compileReport.bind(this);
 
     }
 
@@ -188,35 +188,16 @@ class DataManipulation extends React.Component {
         }
     }
 
-    uploadReport() {
-        fetch(Globals.urlUserFunctionHierarchy, {
-            method: 'POST',
-            headers: {
-                'Accept': 'application/json',
-                'Content-Type': 'application/json',
-            },
-            body: JSON.stringify({
-                sessionKey: 123,
-                needPadding: false,
-                parameter: {
-                    className : "com.ddp.access.UserScriptParameter",
-                    action:"add",
-                    level:this.state.newData.level,
-                    name : this.state.newData.name,
-                    id: this.state.newData.id,
-                    parentId: this.state.newParent.id,
-                    content: this.state.content
-                }
-            })
-        })
+    compileReport() {
+        var url = Globals.urlUserFunctionCompile+"?id="+this.state.cursor.id;
+        fetch(url)
             .then(result=> {
                 if (result.status >= 400) {
                     throw new Error("Bad response from server");
                 }
                 return result.json();
             }).then(r=>{
-            alert(r);
-            this.setState({changed:false, newParent:null, newData:null});
+            alert(r.result)
         });
     }
 
@@ -241,7 +222,7 @@ class DataManipulation extends React.Component {
                               <button onClick={this.toggle} disabled={this.state.changed || this.state.level==='file'}>Add</button>
                               <button onClick={this.removeNode} disabled={this.state.changed || this.state.level==='root'}>Remove</button>
                               <button disabled={!this.state.changed && !this.state.textChanged} onClick={this.saveNew}>Save</button>
-                              <button disabled={this.state.level!=='report'} onClick={this.uploadReport}>Upload Report</button>
+                              <button disabled={this.state.level!=='report'} onClick={this.compileReport}>Compile</button>
                               <AddNewReportModal level={this.state.level} isOpen={this.state.modal} onHide={this.toggle} onDataChange={this.handleNewData}/>
                           </div>
                       </div>
